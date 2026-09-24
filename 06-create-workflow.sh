@@ -1,0 +1,130 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+mkdir -p .github/workflows
+WORKFLOW_PATH=".github/workflows/pr-checks.yml"
+
+echo "[6/6] Generating GitHub Actions PR checks workflow..."
+
+cat << 'EOF' > "$WORKFLOW_PATH"
+name: PR Checks (uv Monorepo)
+
+on:
+  pull_request:
+    branches:
+      - main
+      - stg
+      - dev
+    types:
+      - opened
+      - synchronize
+      - reopened
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  pr-title-check:
+    name: Validate PR Title
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check PR Title Format
+        uses: amannn/action-semantic-pull-request@v5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          types: |
+            feat
+            fix
+            docs
+            style
+            refactor
+            perf
+            test
+            build
+            ci
+            chore
+            revert
+
+  build-and-test:
+    name: Quality Checks & Workspace Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          cache-suffix: "uv-monorepo"
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Workspace Dependencies
+        run: uv sync --all-packages --all-extras
+
+      - name: Check Formatting (Ruff)
+        run: uv run ruff format --check .
+
+      - name: Code Linting (Ruff)
+        run: uv run ruff check .
+
+      - name: Detect Changed Packages & Run Pytest
+        env:
+          BASE_BRANCH: "origin/${{ github.base_ref }}"
+        run: |
+          echo "Comparing changes against $BASE_BRANCH..."
+
+          CHANGED_FILES=$(git diff --name-only "$BASE_BRANCH" HEAD)
+          echo "Changed files:"
+          echo "$CHANGED_FILES"
+          echo "----------------------------------------"
+
+          if echo "$CHANGED_FILES" | grep -E '^(uv\.lock|pyproject\.toml|\.github/)' > /dev/null; then
+            echo "Global dependency or configuration change detected. Running full pytest suite..."
+            uv run pytest
+            exit 0
+          fi
+
+          CHANGED_DIRS=$(echo "$CHANGED_FILES" | grep -E '^(packages|services|apps)/' | cut -d'/' -f1,2 | sort -u || true)
+
+          TEST_PATHS=""
+          for DIR in $CHANGED_DIRS; do
+            if [ -d "$DIR" ]; then
+              TEST_PATHS="$TEST_PATHS $DIR"
+            fi
+          done
+
+          if [ -z "$TEST_PATHS" ]; then
+            echo "No package source or test changes detected. Skipping pytest."
+          else
+            echo "Running pytest for modified targets:$TEST_PATHS"
+            uv run pytest $TEST_PATHS
+          fi
+
+  branch-guardrails:
+    name: Target Branch Guardrails
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify Target Branch Rules
+        run: |
+          TARGET="${{ github.base_ref }}"
+          SOURCE="${{ github.head_ref }}"
+          
+          echo "PR Target Branch: $TARGET"
+          echo "PR Source Branch: $SOURCE"
+          
+          if [ "$TARGET" = "main" ] && [ "$SOURCE" != "stg" ]; then
+            echo "::warning::PRs into main usually come from 'stg'. Ensure proper testing before merging."
+          fi
+EOF
+
+echo "✓ Created $WORKFLOW_PATH successfully!"
