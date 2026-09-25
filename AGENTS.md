@@ -5,7 +5,7 @@ Digital taximeter prototype for TaxiTech Solutions (TTX-247): a CLI that prices 
 and an API + web panel. Requirements live in `docs/CLIENT_SPECS.md`; the clean
 architecture rules in `docs/rules_project.md`.
 
-- **Language:** Python 3.12 · **Stack:** uv monorepo (members `apps/*`, `packages/*`, `shared/*`) · DDD bounded contexts: `ride`, `pricing`, `identity`, `fleet`
+- **Language:** Python 3.12 · **Stack:** uv monorepo (members `apps/*`, `packages/*`, `shared/*`) · DDD bounded contexts: `ride`, `pricing`, `identity`, `fleet` · CLI: Typer (commands) + Textual (live UI from T2) · texts via python-i18n (Spanish primary)
 
 ## Non-negotiables
 

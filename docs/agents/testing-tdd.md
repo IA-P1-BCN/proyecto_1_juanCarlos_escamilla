@@ -25,6 +25,10 @@ Exemption: throwaway scaffolding/scripts. Everything in `packages/*` (contexts) 
 
 - All tests in **`packages/tests`** (the dedicated test workspace member) — they may
   import any other member, nothing imports them.
+- **CLI tests use Typer's `CliRunner`** — never raw `main()` + capsys: Typer parses
+  `sys.argv` and would eat pytest's arguments. The i18n contract is part of the test:
+  placeholders must resolve (no raw `taximetro.` keys in the output), rendered text is
+  not blank, and the Spanish literals of `locales/es.yml` pin the language.
 - Files mirror the structure they specify: `tests/ride/test_carrera.py`,
   `tests/pricing/test_motor_tarifas.py`, …
 - Test names state the behavior in domain vocabulary (*carrera*, *tarifa*,

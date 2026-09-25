@@ -44,6 +44,17 @@ application/     # use cases + ports.py (consumer-owned Protocols)
 infrastructure/  # adapters: config readers, repositories, external clients
 ```
 
+## CLI stack
+
+- **Typer** — the command interface: the `taximetro` console script and the commands each
+  fase adds.
+- **Textual** — the live meter UI (real-time counter, non-blocking), adopted from T2 onward.
+- **python-i18n** — every user-facing text goes through `i18n.t`; no hardcoded strings.
+  Locale files live inside the cli package (`locales/es.yml`,
+  `filename_format = {locale}.{format}`) and **PyYAML must be an explicit dependency**
+  (python-i18n fails silently without it). Spanish is the main language; adding
+  `locales/en.yml` is enough to translate.
+
 ## The four bounded contexts
 
 | Context | Type | Owns | Emits / consumes |
