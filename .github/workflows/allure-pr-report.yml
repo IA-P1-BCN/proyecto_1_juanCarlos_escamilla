@@ -48,7 +48,7 @@ jobs:
           echo "subfolder=pr-$PR_NUM" >> $GITHUB_OUTPUT
 
       - name: Generate Allure Report with History
-        uses: simple-elf/allure-report-action@v1.10
+        uses: simple-elf/allure-report-action@master
         with:
           allure_results: allure-results
           allure_history: allure-history
