@@ -1,7 +1,7 @@
 """Carrera — aggregate root de ride: se inicia, cambia de estado y finaliza."""
 
 from ride.application.ports import PublicadorEventos
-from ride.domain.eventos import CarreraIniciada
+from ride.domain.eventos import CarreraIniciada, EstadoCambiado
 from shared_kernel import Estado, Money
 
 
@@ -27,6 +27,11 @@ class Carrera:
         self._estado = Estado.PARADA
         self._instante_inicio = ahora
         self._publicador.publicar(CarreraIniciada(momento=ahora))
+
+    def cambiar_estado(self, estado: Estado, ahora: float) -> None:
+        """Pasa el vehículo a `estado`; no detiene ni reinicia la acumulación."""
+        self._estado = estado
+        self._publicador.publicar(EstadoCambiado(momento=ahora, estado=estado))
 
     def acumular(self, importe: Money) -> None:
         """Suma al Importe de la Carrera el importe calculado por pricing."""

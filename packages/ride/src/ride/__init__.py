@@ -2,6 +2,6 @@
 
 from ride.application.ports import PublicadorEventos
 from ride.domain.carrera import Carrera
-from ride.domain.eventos import CarreraIniciada
+from ride.domain.eventos import CarreraIniciada, EstadoCambiado
 
-__all__ = ["Carrera", "CarreraIniciada", "PublicadorEventos"]
+__all__ = ["Carrera", "CarreraIniciada", "EstadoCambiado", "PublicadorEventos"]

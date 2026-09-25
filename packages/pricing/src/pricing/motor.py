@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass
 
-from shared_kernel import Money
+from shared_kernel import Estado, Money
 
 
 @dataclass(frozen=True)
@@ -26,7 +26,14 @@ class MotorDeTarifas:
     def __init__(self, tarifa: Tarifa = TARIFA_VIGENTE) -> None:
         self._tarifa = tarifa
 
-    def importe_en_parada(self, segundos: float) -> Money:
-        return Money(
-            centimos=round(segundos * self._tarifa.parada_centimos_por_segundo)
+    def importe_de_tramo(self, estado: Estado, segundos: float) -> Money:
+        """Importe de un tramo de `segundos` con el vehículo en `estado`."""
+        centimos_por_segundo = self._tarifa_por(estado)
+        return Money(centimos=round(segundos * centimos_por_segundo))
+
+    def _tarifa_por(self, estado: Estado) -> int:
+        return (
+            self._tarifa.parada_centimos_por_segundo
+            if (estado is Estado.PARADA)
+            else self._tarifa.movimiento_centimos_por_segundo
         )

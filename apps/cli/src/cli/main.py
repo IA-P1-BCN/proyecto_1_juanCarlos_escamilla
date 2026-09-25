@@ -13,16 +13,25 @@ from pricing import MotorDeTarifas
 from rich.live import Live
 from rich.text import Text
 from ride import Carrera
+from shared_kernel import Estado
 from shared_libs import EventBus
 
 _BANNER = "taximetro.banner"
 _INSTRUCCIONES = "taximetro.instrucciones"
 _LIBRE = "taximetro.libre"
 _SIN_CARRERA = "taximetro.sin_carrera"
-_PARADA = "taximetro.parada"
+_ETIQUETAS_ESTADO = {
+    Estado.PARADA: "taximetro.parada",
+    Estado.EN_MOVIMIENTO: "taximetro.en_movimiento",
+}
 _CARRERA_INICIADA = "taximetro.carrera_iniciada"
+_NO_HAY_CARRERA = "taximetro.no_hay_carrera"
 _COMANDO_DESCONOCIDO = "taximetro.comando_desconocido"
 _PROMPT = "> "
+_ESTADOS_POR_PALABRA = {
+    "parada": Estado.PARADA,
+    "movimiento": Estado.EN_MOVIMIENTO,
+}
 
 
 class Reloj(Protocol):
@@ -58,16 +67,25 @@ class Sesion:
     ultimo_instante: float = 0.0
 
 
+def acumular_tramo(sesion: Sesion, reloj: Reloj, estado: Estado) -> float:
+    """Liquida el tiempo pendiente con la tarifa de `estado`; devuelve el instante."""
+    ahora = reloj.ahora()
+    transcurrido = ahora - sesion.ultimo_instante
+    if transcurrido > 0 and sesion.carrera is not None:
+        sesion.carrera.acumular(sesion.motor.importe_de_tramo(estado, transcurrido))
+        sesion.ultimo_instante = ahora
+    return ahora
+
+
 def linea_estado(sesion: Sesion, reloj: Reloj) -> str:
     """Línea de estado del taxista: siempre visible, refrescada con el reloj."""
     if sesion.carrera is None:
         return f"🚕 {i18n.t(_LIBRE)} · {i18n.t(_SIN_CARRERA)}"
-    ahora = reloj.ahora()
-    transcurrido = ahora - sesion.ultimo_instante
-    if transcurrido > 0:
-        sesion.carrera.acumular(sesion.motor.importe_en_parada(transcurrido))
-        sesion.ultimo_instante = ahora
-    return f"🚕 {i18n.t(_PARADA)} · {sesion.carrera.importe.formato()}"
+    estado = sesion.carrera.estado
+    assert estado is not None
+    acumular_tramo(sesion, reloj, estado)
+    etiqueta = i18n.t(_ETIQUETAS_ESTADO[estado])
+    return f"🚕 {etiqueta} · {sesion.carrera.importe.formato()}"
 
 
 def iniciar_carrera(sesion: Sesion, reloj: Reloj) -> None:
@@ -76,6 +94,17 @@ def iniciar_carrera(sesion: Sesion, reloj: Reloj) -> None:
     sesion.carrera.iniciar(ahora=ahora)
     sesion.ultimo_instante = ahora
     typer.echo(i18n.t(_CARRERA_INICIADA))
+
+
+def cambiar_estado_vehiculo(sesion: Sesion, reloj: Reloj, estado: Estado) -> None:
+    """`estado parada|movimiento`: liquida el tramo en curso y cambia de Estado."""
+    if sesion.carrera is None:
+        typer.echo(i18n.t(_NO_HAY_CARRERA))
+        return
+    estado_actual = sesion.carrera.estado
+    assert estado_actual is not None
+    ahora = acumular_tramo(sesion, reloj, estado_actual)
+    sesion.carrera.cambiar_estado(estado, ahora=ahora)
 
 
 def leer_comando() -> str | None:
@@ -94,10 +123,13 @@ def bucle_sesion(sesion: Sesion, reloj: Reloj) -> None:
         comando = leer_comando()
         if comando is None or comando == "salir":
             return
-        if comando == "iniciar":
+        verbo, _, resto = comando.partition(" ")
+        if verbo == "iniciar" and not resto:
             iniciar_carrera(sesion, reloj)
-        elif comando == "estado":
+        elif verbo == "estado" and not resto:
             typer.echo(linea_estado(sesion, reloj))
+        elif verbo == "estado" and resto in _ESTADOS_POR_PALABRA:
+            cambiar_estado_vehiculo(sesion, reloj, _ESTADOS_POR_PALABRA[resto])
         else:
             typer.echo(i18n.t(_COMANDO_DESCONOCIDO))
 

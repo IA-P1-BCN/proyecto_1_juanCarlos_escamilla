@@ -5,5 +5,7 @@ es:
     libre: "libre"
     sin_carrera: "sin carrera"
     parada: "parada"
+    en_movimiento: "en_movimiento"
     carrera_iniciada: "Carrera iniciada — el contador corre en parada (0,02 €/s)"
+    no_hay_carrera: "No hay Carrera en curso: escribe iniciar"
     comando_desconocido: "No entiendo ese comando. Comandos: iniciar · estado parada|movimiento · finalizar · salir"
