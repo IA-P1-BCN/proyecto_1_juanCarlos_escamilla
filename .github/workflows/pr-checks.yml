@@ -60,13 +60,16 @@ jobs:
           python-version: "3.12"
 
       - name: Install Workspace Dependencies
-        run: uv sync --all-packages --all-extras
+        run: uv sync --all-packages --all-extras --frozen
 
       - name: Check Formatting (Ruff)
         run: uv run ruff format --check .
 
       - name: Code Linting (Ruff)
         run: uv run ruff check .
+
+      - name: Type Checking (mypy)
+        run: uv run mypy
 
       - name: Detect Changed Packages & Run Pytest
         env:
@@ -109,10 +112,10 @@ jobs:
         run: |
           TARGET="${{ github.base_ref }}"
           SOURCE="${{ github.head_ref }}"
-          
+
           echo "PR Target Branch: $TARGET"
           echo "PR Source Branch: $SOURCE"
-          
+
           if [ "$TARGET" = "main" ] && [ "$SOURCE" != "stg" ]; then
             echo "::warning::PRs into main usually come from 'stg'. Ensure proper testing before merging."
           fi

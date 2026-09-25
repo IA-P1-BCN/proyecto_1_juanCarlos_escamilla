@@ -21,4 +21,3 @@ Follow these steps:
    - Redundant (the agent already knows this)
    - Too vague to be actionable
    - Overly obvious (like "write clean code")
-

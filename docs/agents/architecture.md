@@ -46,7 +46,7 @@ infrastructure/  # adapters: config readers, repositories, external clients
 
 ## CLI stack
 
-- **Typer** — the command interface: the `taximetro` console script and the commands each
+- **Typer** — the command interface: the `taximetro-cli` console script and the commands each
   fase adds.
 - **Textual** — the live meter UI (real-time counter, non-blocking), adopted from T2 onward.
 - **python-i18n** — every user-facing text goes through `i18n.t`; no hardcoded strings.

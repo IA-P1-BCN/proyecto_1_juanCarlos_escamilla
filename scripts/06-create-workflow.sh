@@ -118,10 +118,10 @@ jobs:
         run: |
           TARGET="${{ github.base_ref }}"
           SOURCE="${{ github.head_ref }}"
-          
+
           echo "PR Target Branch: $TARGET"
           echo "PR Source Branch: $SOURCE"
-          
+
           if [ "$TARGET" = "main" ] && [ "$SOURCE" != "stg" ]; then
             echo "::warning::PRs into main usually come from 'stg'. Ensure proper testing before merging."
           fi
