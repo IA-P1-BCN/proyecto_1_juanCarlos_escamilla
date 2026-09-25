@@ -1,0 +1,18 @@
+[project]
+name = "tests"
+version = "0.1.0"
+description = "Suite de tests del taxímetro (pytest + Allure)"
+requires-python = ">=3.12"
+dependencies = [
+    "cli",
+    "ride",
+    "pricing",
+]
+
+[tool.uv.sources]
+cli = { workspace = true }
+ride = { workspace = true }
+pricing = { workspace = true }
+
+[tool.uv]
+package = false

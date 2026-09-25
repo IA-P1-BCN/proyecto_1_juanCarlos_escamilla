@@ -1,0 +1,4 @@
+es:
+  taximetro:
+    banner: "🚕 TaxiTech — Taxímetro Digital"
+    instrucciones: "Bienvenido. Comandos: iniciar · estado parada|movimiento · finalizar · salir"
