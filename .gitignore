@@ -51,3 +51,10 @@ yarn-error.log*
 .idea/
 *.swp
 *.swo
+
+# --- ZCode agent state ---
+.zcode/
+
+# --- Allure test reports ---
+allure-results/
+allure-report/
