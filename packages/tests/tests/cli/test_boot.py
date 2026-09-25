@@ -9,7 +9,7 @@ runner = CliRunner()
 def test_al_arrancar_muestra_taxi_e_instrucciones_en_espanol() -> None:
     resultado = runner.invoke(app, [])
     salida = resultado.output
-    # Español del locale es.yml (fuente independiente: el spec de la fase)
+    # Español fijado por el locale es.yml (requisito Fase 1: idioma español)
     assert "🚕" in salida
     assert "Bienvenido" in salida
     assert "iniciar" in salida
