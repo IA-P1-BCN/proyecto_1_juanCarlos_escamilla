@@ -1,0 +1,31 @@
+[project]
+name = "cli"
+version = "0.1.0"
+description = "CLI del taxímetro — puerta de entrada sobre los contextos ride y pricing"
+requires-python = ">=3.12"
+dependencies = [
+    "typer>=0.12",
+    "textual>=1.0",
+    "python-i18n>=0.3.9",
+    "pyyaml>=6.0",
+    "ride",
+    "pricing",
+    "shared-kernel",
+    "shared-libs",
+]
+
+[project.scripts]
+taximetro = "cli.main:main"
+
+[tool.uv.sources]
+ride = { workspace = true }
+pricing = { workspace = true }
+shared-kernel = { workspace = true }
+shared-libs = { workspace = true }
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/cli"]
