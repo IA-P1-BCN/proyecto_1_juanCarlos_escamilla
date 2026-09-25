@@ -58,3 +58,4 @@ yarn-error.log*
 # --- Allure test reports ---
 allure-results/
 allure-report/
+.agents
