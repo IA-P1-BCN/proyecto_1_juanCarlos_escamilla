@@ -633,6 +633,8 @@ dependencies = [
     { name = "cli" },
     { name = "pricing" },
     { name = "ride" },
+    { name = "shared-kernel" },
+    { name = "shared-libs" },
 ]
 
 [package.metadata]
@@ -640,6 +642,8 @@ requires-dist = [
     { name = "cli", editable = "apps/cli" },
     { name = "pricing", editable = "packages/pricing" },
     { name = "ride", editable = "packages/ride" },
+    { name = "shared-kernel", editable = "shared/shared-kernel" },
+    { name = "shared-libs", editable = "shared/shared-libs" },
 ]
 
 [[package]]

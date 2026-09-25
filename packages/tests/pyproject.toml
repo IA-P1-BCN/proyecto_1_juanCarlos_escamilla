@@ -7,12 +7,16 @@ dependencies = [
     "cli",
     "ride",
     "pricing",
+    "shared-kernel",
+    "shared-libs",
 ]
 
 [tool.uv.sources]
 cli = { workspace = true }
 ride = { workspace = true }
 pricing = { workspace = true }
+shared-kernel = { workspace = true }
+shared-libs = { workspace = true }
 
 [tool.uv]
 package = false

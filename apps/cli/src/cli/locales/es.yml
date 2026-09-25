@@ -2,3 +2,8 @@ es:
   taximetro:
     banner: "🚕 TaxiTech — Taxímetro Digital"
     instrucciones: "Bienvenido. Comandos: iniciar · estado parada|movimiento · finalizar · salir"
+    libre: "libre"
+    sin_carrera: "sin carrera"
+    parada: "parada"
+    carrera_iniciada: "Carrera iniciada — el contador corre en parada (0,02 €/s)"
+    comando_desconocido: "No entiendo ese comando. Comandos: iniciar · estado parada|movimiento · finalizar · salir"
