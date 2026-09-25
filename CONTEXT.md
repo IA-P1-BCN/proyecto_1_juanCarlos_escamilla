@@ -15,6 +15,10 @@ _Avoid_: viaje, ride, servicio, trayecto
 Situación del vehículo durante la carrera: `parada` o `en_movimiento` (English aliases in code: stopped / moving).
 _Avoid_: modo, fase
 
+**Libre**:
+Situación del taxímetro fuera de carrera: no hay Carrera en curso y el Importe no corre. Es el estado visible por defecto al arrancar y entre carreras.
+_Avoid_: disponible, en espera, idle
+
 **Importe**:
 Total en euros acumulado de una carrera, calculado por el motor de tarifas.
 _Avoid_: total, precio, coste
