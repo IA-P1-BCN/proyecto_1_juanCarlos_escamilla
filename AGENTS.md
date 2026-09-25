@@ -26,7 +26,11 @@ architecture rules in `docs/rules_project.md`.
 uv sync --all-packages                          # install the workspace
 uv run pytest                                   # run the test suite
 uv run ruff format . && uv run ruff check .     # format + lint
+uv run taximetro-cli                            # run the CLI
 ```
+
+Human wrappers for the same commands live in `Taskfile.yml` (`task setup`, `task
+check`, `task run`; requires go-task). Agents and CI use the raw uv commands.
 
 ## Agent skills
 

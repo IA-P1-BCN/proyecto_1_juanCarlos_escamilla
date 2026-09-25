@@ -26,7 +26,7 @@ Un cambio en una parte no obliga a tocar diez archivos más.
 Si las piezas están separadas, puedes probar cada una por su cuenta.
 
 
-Ninguno de estos principios es nuevo — lo nuevo es que ahora también los sigue el agente que 
+Ninguno de estos principios es nuevo — lo nuevo es que ahora también los sigue el agente que
 escribe contigo.
 
 

@@ -1,0 +1,41 @@
+version: "3"
+
+tasks:
+  setup:
+    desc: Instala el workspace y los hooks de pre-commit (una vez tras clonar)
+    cmds:
+      - uv sync --all-packages
+      - uv run pre-commit install
+
+  run:
+    desc: Arranca el CLI del taxímetro (taximetro-cli)
+    cmds:
+      - uv run taximetro-cli
+
+  format:
+    desc: Formatea el código con ruff
+    cmds:
+      - uv run ruff format .
+
+  lint:
+    desc: Lint del workspace con ruff
+    cmds:
+      - uv run ruff check .
+
+  typecheck:
+    desc: Comprueba tipos con mypy
+    cmds:
+      - uv run mypy
+
+  test:
+    desc: Ejecuta la suite de tests
+    cmds:
+      - uv run pytest
+
+  check:
+    desc: Todo lo que exige la CI en un PR (formato + lint + tipos + tests)
+    cmds:
+      - uv run ruff format --check .
+      - uv run ruff check .
+      - uv run mypy
+      - uv run pytest

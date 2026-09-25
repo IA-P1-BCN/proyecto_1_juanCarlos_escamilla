@@ -62,26 +62,47 @@ Cada Fase es un milestone con sus historias: [`Fase 1`](https://github.com/IA-P1
 
 ## 🛠️ Instalación
 
-Requisitos: Python 3.12+ y [uv](https://docs.astral.sh/uv/).
+Requisitos: Python 3.12+, [uv](https://docs.astral.sh/uv/) y
+[Task](https://taskfile.dev) (`brew install go-task`; [otras formas de
+instalarlo](https://taskfile.dev/installation/)).
 
 ```bash
 git clone git@github.com:IA-P1-BCN/proyecto_1_juanCarlos_escamilla.git
 cd proyecto_1_juanCarlos_escamilla
-uv sync --all-packages      # instala todo el workspace
-uv run pytest               # suite de tests (verde)
+task setup        # uv sync --all-packages + hooks de pre-commit
 ```
+
+> ¿Sin `task`? Fallback directo: `uv sync --all-packages && uv run pre-commit install`.
+
+## 🧰 Comandos del día a día
+
+| qué quieres | con task | con uv (fallback) |
+| --- | --- | --- |
+| arrancar el CLI | `task run` | `uv run taximetro-cli` |
+| formatear | `task format` | `uv run ruff format .` |
+| lint | `task lint` | `uv run ruff check .` |
+| tipos | `task typecheck` | `uv run mypy` |
+| tests | `task test` | `uv run pytest` |
+| todo lo que exige la CI | `task check` | los cuatro anteriores |
 
 ## 🚦 Uso
 
-> 🚧 **En construcción — Fase 1.** Esta es la interfaz objetivo del CLI:
-
 ```text
-$ uv run taximetro
+$ task run
+🚕 TaxiTech — Taxímetro Digital
 Bienvenido. Comandos: iniciar · estado parada|movimiento · finalizar · salir
-$ iniciar        # la Carrera arranca y el contador corre (0,02 €/s en parada)
-$ estado movimiento   # el contador acelera (0,05 €/s)
-$ finalizar      # total a cobrar: 12,40 €
 ```
+
+Opciones del CLI con `task run -- --help` (equivale a `uv run taximetro-cli
+--help`): autocompletado para tu shell (`--install-completion`) y la ayuda.
+
+> 🚧 **En construcción — Fase 1.** Esta es la interfaz objetivo del CLI:
+>
+> ```text
+> $ iniciar        # la Carrera arranca y el contador corre (0,02 €/s en parada)
+> $ estado movimiento   # el contador acelera (0,05 €/s)
+> $ finalizar      # total a cobrar: 12,40 €
+> ```
 
 ## 🧭 Cómo está construido
 
@@ -95,8 +116,12 @@ Monorepo uv con **arquitectura DDD** y contextos delimitados: `ride` · `pricing
 ## 🤝 Contribuir
 
 1. Rama de trabajo desde `dev`: `git checkout -b feat/mi-cambio dev`
-2. PR hacia `dev` con título semántico (`feat: …`, `fix: …`) — la CI ejecuta ruff + pytest.
+2. PR hacia `dev` con título semántico (`feat: …`, `fix: …`) — la CI ejecuta
+   ruff + mypy + pytest.
 3. TDD estricto: primero el test en rojo (`docs/agents/testing-tdd.md`).
+
+Tras `task setup`, cada commit pasa por pre-commit (ruff lint + formato y checks
+de higiene de ficheros).
 
 **Checklist del README en cada PR:** si cerraste una Fase, **mueve el 🚕** al siguiente
 tramo del diagrama y pon su banner en 🟢.
