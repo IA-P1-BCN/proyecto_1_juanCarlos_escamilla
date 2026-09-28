@@ -170,7 +170,8 @@ task allure      # resultados Allure en allure-results/
 
 El informe **Allure** se publica por PR desde la CI (badge de Tests arriba);
 localmente, `task allure` genera los resultados y `allure serve allure-results`
-los abre en el navegador.
+los abre en el navegador. El **histórico con un informe por PR** (`pr-<n>/`) está
+indexado en [la raíz de Pages](https://ia-p1-bcn.github.io/proyecto_1_juanCarlos_escamilla/).
 
 ## 🤝 Contribuir
 
