@@ -1,7 +1,13 @@
-"""Driver de la demo TUI: graba bin/taximetro en un pty tecleando el turno a ritmo fijo.
+"""Driver de la demo TUI: graba la sesión en un pty — terminal, `task run-tui` y turno.
 
-Uso: python3 scripts/demo-tui-driver.py [RUTA_BINARIO] [SALIDA.cast]
-Secuencia: 1 · (3s) · 2 · (5s) · 2 · (4s) · 3 · (2s) · q — el vídeo termina al salir.
+Uso (regenerar docs/assets/demo-taximetro.gif):
+    task bin                                                    # binario nativo
+    python3 scripts/demo-tui-driver.py demo.cast                # graba la sesión
+    agg demo.cast docs/assets/demo-taximetro.gif --theme dracula \
+      --font-size 20 --idle-time-limit 5 --last-frame-duration 2  # brew install agg
+
+Vídeo: prompt del shell → se escribe `task run-tui` → TUI →
+       1 · (3s) · 2 · (5s) · 2 · (4s) · 3 · (2s) · q — el vídeo termina al salir.
 Produce un fichero asciinema v2 (.cast) que `agg` convierte en GIF.
 """
 
@@ -15,37 +21,49 @@ from fcntl import ioctl
 from struct import pack
 from termios import TIOCSWINSZ
 
-# (retraso en segundos desde el montaje de la TUI, tecla a enviar)
-SECUENCIA = [(0.3, "1"), (3.3, "2"), (8.3, "2"), (12.3, "3"), (14.3, "q")]
+PROMPT = b"$ "  # prompt de bash --norc
+COMANDO = "task run-tui"
+# Fase shell: tecleo del comando (70 ms por carácter) + Enter
+FASE_SHELL = [(i * 0.07, c) for i, c in enumerate(COMANDO)] + [(1.0, "\r")]
+# Fase TUI (segundos desde el montaje de la TUI): el turno del taxista
+FASE_TUI = [(0.3, "1"), (3.3, "2"), (8.3, "2"), (12.3, "3"), (14.3, "q")]
 MONTAJE = b"pulsa 1"  # texto del estado inicial: la TUI ya está en pantalla
-FIN = 16.5  # corte tras la última tecla (los 2s de cola tras finalizar)
+FIN_TUI = 16.5  # corte tras la última tecla (los 2s de cola tras finalizar)
 ANCHO, ALTO = 80, 24
 
 
 def main() -> None:
-    binario = sys.argv[1] if len(sys.argv) > 1 else "./bin/taximetro"
-    salida = sys.argv[2] if len(sys.argv) > 2 else "demo-tui.cast"
+    salida = sys.argv[1] if len(sys.argv) > 1 else "demo-tui.cast"
     pid, maestro = pty.fork()
     if pid == 0:
-        os.execvp(binario, [binario])
+        env = dict(os.environ, BASH_SILENCE_DEPRECATION_WARNING="1", PS1="$ ")
+        os.execvpe("bash", ["bash", "--noprofile", "--norc"], env)
         os._exit(1)
     ioctl(maestro, TIOCSWINSZ, pack("HHHH", ALTO, ANCHO, 0, 0))
 
     eventos: list[tuple[float, str]] = []
     arranque = time.monotonic()  # reloj de los eventos: nunca se reinicia (monótono)
-    montaje: float | None = None  # instante del montaje: origen del ritmo de teclas
-    pendientes = list(SECUENCIA)
+    anclas = {"shell": None, "tui": None}  # instantes de arranque de cada fase
+    pendientes = [("shell", t, k) for t, k in FASE_SHELL] + [
+        ("tui", t, k) for t, k in FASE_TUI
+    ]
     recorte = b""
     while True:
         ahora = time.monotonic()
-        if montaje is not None:
-            if pendientes and ahora - montaje >= pendientes[0][0]:
-                os.write(maestro, pendientes.pop(0)[1].encode())
-                continue
-            if ahora - montaje > FIN:
-                break
-        elif ahora - arranque > 30:
-            break  # la TUI nunca montó: no grabar eternamente
+        vencidos = [
+            (t, k, fase)
+            for fase, t, k in pendientes
+            if anclas[fase] is not None and ahora - anclas[fase] >= t
+        ]
+        if vencidos:
+            _, tecla, fase = min(vencidos)
+            pendientes.remove((fase, min(vencidos)[0], tecla))
+            os.write(maestro, tecla.encode())
+            continue
+        if anclas["tui"] is not None and ahora - anclas["tui"] > FIN_TUI:
+            break
+        if all(a is None for a in anclas.values()) and ahora - arranque > 30:
+            break  # ni prompt ni TUI: no grabar eternamente
         listo, _, _ = select.select([maestro], [], [], 0.02)
         if not listo:
             continue
@@ -56,10 +74,11 @@ def main() -> None:
         if not datos:
             break
         eventos.append((ahora - arranque, datos))
-        if montaje is None:
-            recorte = (recorte + datos)[-200:]
-            if MONTAJE in recorte:
-                montaje = time.monotonic()
+        recorte = (recorte + datos)[-200:]
+        if anclas["shell"] is None and PROMPT in recorte:
+            anclas["shell"] = time.monotonic()
+        elif anclas["tui"] is None and MONTAJE in recorte:
+            anclas["tui"] = time.monotonic()
     try:
         os.close(maestro)
     except OSError:

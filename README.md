@@ -14,20 +14,6 @@
 
 ![Taxímetro TUI en acción](docs/assets/demo-taximetro.gif)
 
-El turno completo en la TUI del conductor, grabado sobre el binario nativo: `1` inicia
-la Carrera (3 s), `2` pasa a `en_movimiento` (5 s), `2` vuelve a `parada` (4 s), `3`
-finaliza — con el Importe total exacto en pantalla — y `q` sale. Para regenerarla:
-
-```bash
-task bin                                                    # binario nativo
-python3 scripts/demo-tui-driver.py bin/taximetro demo.cast  # graba la sesión (.cast)
-agg demo.cast docs/assets/demo-taximetro.gif \
-  --theme dracula --font-size 20 --idle-time-limit 5 --last-frame-duration 2
-```
-
-El ritmo de teclas vive en [`scripts/demo-tui-driver.py`](scripts/demo-tui-driver.py);
-para renderizar hace falta [agg](https://github.com/asciinema/agg) (`brew install agg`).
-
 ## ✨ Características
 
 - ⌨️ **CLI en tiempo real** — inicia la Carrera con un comando, cambia entre `parada` y
