@@ -1,10 +1,6 @@
 """Driver de la demo TUI: graba la sesión en un pty — terminal, `task run-tui` y turno.
 
-Uso (regenerar docs/assets/demo-taximetro.gif):
-    task bin                                                    # binario nativo
-    python3 scripts/demo-tui-driver.py demo.cast                # graba la sesión
-    agg demo.cast docs/assets/demo-taximetro.gif --theme dracula \
-      --font-size 20 --idle-time-limit 5 --last-frame-duration 2  # brew install agg
+Uso: scripts/demo-gif.sh   (graba con este driver y renderiza el GIF con agg)
 
 Vídeo: prompt del shell → se escribe `task run-tui` → TUI →
        1 · (3s) · 2 · (5s) · 2 · (4s) · 3 · (2s) · q — el vídeo termina al salir.
