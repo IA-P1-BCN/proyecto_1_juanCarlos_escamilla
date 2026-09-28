@@ -3,8 +3,9 @@
 from datetime import UTC, datetime
 from pathlib import Path
 
-from taximetro import HistoricoJson
+from taximetro import BitacoraJSON, HistoricoJson
 from taximetro_cli.main import crear_app
+from taximetro_log import leer
 from typer.testing import CliRunner
 
 
@@ -152,3 +153,17 @@ def test_historial_con_dia_mal_formado_avisa(tmp_path: Path) -> None:
     )
 
     assert "Formato de día inválido" in resultado.output
+
+
+def test_el_arranque_y_los_errores_quedan_en_la_bitacora(tmp_path: Path) -> None:
+    ruta_bitacora = tmp_path / "taximetro.log"
+    bitacora = BitacoraJSON(ruta_bitacora)
+
+    runner.invoke(
+        crear_app(RelojFalso([]), bitacora=bitacora), [], input="finalizar\nsalir\n"
+    )
+
+    eventos = leer(ruta_bitacora)
+    assert eventos[0]["evento"] == "arranque"
+    assert eventos[-1]["evento"] == "error"
+    assert "No hay Carrera en curso" in eventos[-1]["mensaje"]

@@ -13,6 +13,7 @@ members = [
     "taximetro-billing",
     "taximetro-cli",
     "taximetro-kernel",
+    "taximetro-log",
     "taximetro-ride",
 ]
 
@@ -590,6 +591,7 @@ source = { editable = "packages/taximetro" }
 dependencies = [
     { name = "taximetro-billing" },
     { name = "taximetro-kernel" },
+    { name = "taximetro-log" },
     { name = "taximetro-ride" },
 ]
 
@@ -597,6 +599,7 @@ dependencies = [
 requires-dist = [
     { name = "taximetro-billing", editable = "packages/taximetro-billing" },
     { name = "taximetro-kernel", editable = "packages/taximetro-kernel" },
+    { name = "taximetro-log", editable = "packages/taximetro-log" },
     { name = "taximetro-ride", editable = "packages/taximetro-ride" },
 ]
 
@@ -632,6 +635,11 @@ requires-dist = [
 name = "taximetro-kernel"
 version = "0.1.0"
 source = { editable = "packages/taximetro-kernel" }
+
+[[package]]
+name = "taximetro-log"
+version = "0.1.0"
+source = { editable = "packages/taximetro-log" }
 
 [[package]]
 name = "taximetro-ride"

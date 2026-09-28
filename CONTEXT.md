@@ -2,8 +2,9 @@
 
 Glossary for the taximeter system (TTX-247). Canonical terms are Spanish, matching
 `docs/CLIENT_SPECS.md`; code packages are `taximetro-kernel` (kernel), `taximetro-ride`
-(ride), `taximetro-billing` (billing). Terms are grouped by the bounded context that
-owns them — the owner is the only place that defines the term's model.
+(ride), `taximetro-billing` (billing), `taximetro-log` (log). Terms are grouped by the
+bounded context that owns them — the owner is the only place that defines the term's
+model.
 
 ## Ride — carrera
 
@@ -62,6 +63,12 @@ _Avoid_: reporte, factura, informe de ventas
 **Responsable de flota**:
 Actor que consulta el Histórico y cuadra caja. No conduce carreras.
 _Avoid_: admin, manager, fleet manager
+
+## Log — operación
+
+**Bitácora**:
+Registro de operación en JSON-lines — arranque, cambios de Estado, cierre de Carrera y errores — consultable sin intervenir el proceso en ejecución.
+_Avoid_: log, logger, trazas
 
 ## Planificación
 

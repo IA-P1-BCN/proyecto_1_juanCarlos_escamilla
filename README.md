@@ -34,7 +34,8 @@ Para regenerarla:
   `en_movimiento`, cobra el Importe exacto con dos decimales; REPL de comandos y TUI a
   pantalla completa *(Fase 1 — 🟢)*
 - 🧾 **Histórico y observabilidad** — cada carrera queda registrada en disco
-  (`historial` para cuadrar caja); logs estructurados *(Fase 2 — 🔧 en curso)*; tarifas
+  (`historial` para cuadrar caja) y la operación completa llega a una bitácora
+  JSON-lines (arranque, cambios de estado, cierre, errores) *(Fase 2 — 🟢)*; tarifas
   configurables en `tarifas.json` *(✔)*
 - 🔐 **Arquitectura y UX** — refactorización OO, acceso por contraseña segura, GUI para
   tablet con botones grandes *(Fase 3)*
@@ -45,15 +46,15 @@ Para regenerarla:
 
 ```mermaid
 flowchart LR
-    TAXI(["🚕<br/>estás aquí"]) -- Fase 1 completada ✔ --> F2
+    TAXI(["🚕<br/>estás aquí"]) -- Fase 2 completada ✔ --> F3
     subgraph CARRETERA["🛣️  Carretera de Fases"]
         direction LR
-        F1["🚩 FASE 1<br/>MVP Funcional<br/>🟢 completada"] ==> F2["🚩 FASE 2<br/>Observabilidad<br/>🔧 en curso"] ==> F3["🚩 FASE 3<br/>Arquitectura y UX<br/>⏳ pendiente"] ==> F4["🚩 FASE 4<br/>Producción<br/>⏳ pendiente"]
+        F1["🚩 FASE 1<br/>MVP Funcional<br/>🟢 completada"] ==> F2["🚩 FASE 2<br/>Observabilidad<br/>🟢 completada"] ==> F3["🚩 FASE 3<br/>Arquitectura y UX<br/>⏳ pendiente"] ==> F4["🚩 FASE 4<br/>Producción<br/>⏳ pendiente"]
     end
     style TAXI fill:#facc15,stroke:#a16207,color:#111827
     style CARRETERA fill:#f3f4f6,stroke:#9ca3af
     style F1 fill:#86efac,stroke:#16a34a,color:#111827
-    style F2 fill:#fde047,stroke:#ca8a04,color:#111827
+    style F2 fill:#86efac,stroke:#16a34a,color:#111827
     style F3 fill:#e5e7eb,stroke:#9ca3af,color:#374151
     style F4 fill:#e5e7eb,stroke:#9ca3af,color:#374151
 ```

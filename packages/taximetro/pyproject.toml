@@ -7,12 +7,14 @@ dependencies = [
     "taximetro-kernel",
     "taximetro-ride",
     "taximetro-billing",
+    "taximetro-log",
 ]
 
 [tool.uv.sources]
 taximetro-kernel = { workspace = true }
 taximetro-ride = { workspace = true }
 taximetro-billing = { workspace = true }
+taximetro-log = { workspace = true }
 
 [build-system]
 requires = ["hatchling"]

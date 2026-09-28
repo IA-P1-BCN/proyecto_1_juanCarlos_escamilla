@@ -10,6 +10,7 @@ import typer
 from rich.live import Live
 from rich.text import Text
 from taximetro import (
+    BitacoraJSON,
     Estado,
     EventBus,
     HistoricoJson,
@@ -17,6 +18,7 @@ from taximetro import (
     ServicioTaximetro,
     TaximetroError,
     cargar_tarifa,
+    registrar_eventos,
 )
 
 TEXTOS = json.loads((Path(__file__).parent / "textos.json").read_text(encoding="utf-8"))
@@ -44,12 +46,18 @@ class RelojReal:
         return datetime.now(UTC)
 
 
-def crear_servicio(reloj, historico: HistoricoJson | None = None) -> ServicioTaximetro:
-    """Composition root: tarifas del config, eventos al bus e histórico en JSON."""
+def crear_servicio(
+    reloj, historico: HistoricoJson | None = None, bitacora: BitacoraJSON | None = None
+) -> ServicioTaximetro:
+    """Composition root: tarifas, bus con bitácora suscrita e histórico en JSON."""
+    bitacora = bitacora or BitacoraJSON()
+    bus = EventBus()
+    registrar_eventos(bus, bitacora)
+    bitacora.registrar("arranque")
     return ServicioTaximetro(
         tarifa=cargar_tarifa(),
         reloj=reloj,
-        publicar=EventBus().publicar,
+        publicar=bus.publicar,
         historico=historico or HistoricoJson(),
     )
 
@@ -100,7 +108,9 @@ def _parsear_dia(texto: str) -> date | None:
         return None
 
 
-def ejecutar_comando(servicio: ServicioTaximetro, comando: str) -> None:
+def ejecutar_comando(
+    servicio: ServicioTaximetro, comando: str, bitacora: BitacoraJSON
+) -> None:
     verbo, _, resto = comando.partition(" ")
     try:
         if verbo == "iniciar" and not resto:
@@ -118,13 +128,15 @@ def ejecutar_comando(servicio: ServicioTaximetro, comando: str) -> None:
                 typer.echo(t("historial_dia_invalido"))
             else:
                 _mostrar_historial(servicio, dia)
+                bitacora.registrar("historial_consultado", dia=dia.isoformat())
         else:
             typer.echo(t("comando_desconocido"))
     except TaximetroError as error:
+        bitacora.registrar("error", mensaje=str(error))
         typer.echo(str(error))
 
 
-def bucle(servicio: ServicioTaximetro) -> None:
+def bucle(servicio: ServicioTaximetro, bitacora: BitacoraJSON) -> None:
     """Bucle de comandos: la línea de estado se pinta antes de cada lectura."""
     while True:
         typer.echo(linea_estado(servicio))
@@ -135,14 +147,17 @@ def bucle(servicio: ServicioTaximetro) -> None:
         if comando == "salir":
             return
         if comando:
-            ejecutar_comando(servicio, comando)
+            ejecutar_comando(servicio, comando, bitacora)
 
 
-def sesion(reloj, historico: HistoricoJson | None = None) -> None:
+def sesion(
+    reloj, historico: HistoricoJson | None = None, bitacora: BitacoraJSON | None = None
+) -> None:
     """Arranca el turno; en terminal interactiva la línea se refresca sola."""
-    servicio = crear_servicio(reloj, historico)
+    bitacora = bitacora or BitacoraJSON()
+    servicio = crear_servicio(reloj, historico, bitacora)
     if not sys.stdout.isatty():
-        bucle(servicio)
+        bucle(servicio, bitacora)
         return
     parar = threading.Event()
 
@@ -154,12 +169,14 @@ def sesion(reloj, historico: HistoricoJson | None = None) -> None:
         hilo = threading.Thread(target=refrescar, args=(live,), daemon=True)
         hilo.start()
         try:
-            bucle(servicio)
+            bucle(servicio, bitacora)
         finally:
             parar.set()
 
 
-def crear_app(reloj, historico: HistoricoJson | None = None) -> typer.Typer:
+def crear_app(
+    reloj, historico: HistoricoJson | None = None, bitacora: BitacoraJSON | None = None
+) -> typer.Typer:
     """App Typer con el reloj inyectado (los tests pasan uno falso)."""
     app = typer.Typer(help=t("banner"), invoke_without_command=True)
 
@@ -168,7 +185,7 @@ def crear_app(reloj, historico: HistoricoJson | None = None) -> typer.Typer:
         """Muestra el banner, las instrucciones y arranca la sesión interactiva."""
         typer.echo(t("banner"))
         typer.echo(t("instrucciones"))
-        sesion(reloj, historico)
+        sesion(reloj, historico, bitacora)
 
     return app
 

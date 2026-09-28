@@ -14,6 +14,8 @@ packages/
 │   └── src/taximetro_ride/
 ├── taximetro-billing/           # contexto billing: Tarifa, calcular_importe, config/tarifas.json
 │   └── src/taximetro_billing/
+├── taximetro-log/               # contexto log: BitacoraJSON — JSON-lines rotativo (US-06)
+│   └── src/taximetro_log/
 └── taximetro/                   # capa de aplicación: ServicioTaximetro + histórico (fachada)
     ├── src/taximetro/
     │   ├── application/         # servicio.py — el turno, reloj inyectado, guarda registro
@@ -37,7 +39,10 @@ apps/taximetro_cli/              # solo presentación: REPL Typer + TUI Textual 
 4. **Apps are presentation only** — REPL/TUI translate commands/keys into service calls
    and paint. The clock is always injected (`crear_app(reloj)` / `crear_tui(reloj)`).
 5. **billing owns `config/tarifas.json`** (US-07); the histórico JSON lives under
-   `packages/taximetro/data/` (gitignored, file-first — BD in Fase 4).
+   `packages/taximetro/data/` and the bitácora under `packages/taximetro-log/data/`
+   (both gitignored, file-first — BD in Fase 4). `taximetro-log` knows no domain: the
+   application layer maps domain events to bitácora entries
+   (`registrar_eventos`); the app logs `arranque`, `error` and `historial_consultado`.
 
 ## Testing seams (pre-agreed)
 

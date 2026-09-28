@@ -7,9 +7,10 @@ architecture rules in `docs/rules_project.md`.
 
 - **Language:** Python 3.12 · **Stack:** uv monorepo (`apps/*`, `packages/*`) · bounded
   contexts as packages: `taximetro-kernel` (shared vocabulary), `taximetro-ride`
-  (Carrera lifecycle), `taximetro-billing` (Tarifa/Importe) + `taximetro` (application
-  layer + facade) · app `apps/taximetro_cli`: Typer REPL + Textual TUI, texts in
-  `textos.json` (Spanish primary)
+  (Carrera lifecycle), `taximetro-billing` (Tarifa/Importe), `taximetro-log`
+  (BitacoraJSON, US-06) + `taximetro` (application layer + facade) · app
+  `apps/taximetro_cli`: Typer REPL + Textual TUI, texts in `textos.json` (Spanish
+  primary)
 
 ## Non-negotiables
 

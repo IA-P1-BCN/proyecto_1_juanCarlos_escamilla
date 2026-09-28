@@ -6,8 +6,9 @@
 Thumbs.db
 .history/
 
-# --- Datos en runtime (histórico JSON) ---
+# --- Datos en runtime (histórico JSON, bitácora) ---
 packages/taximetro/data/
+packages/taximetro-log/data/
 
 # --- Python ---
 __pycache__/
