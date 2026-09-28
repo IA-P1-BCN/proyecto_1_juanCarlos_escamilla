@@ -4,6 +4,7 @@
 .AppleDouble
 .LSOverride
 Thumbs.db
+.history/
 
 # --- Python ---
 __pycache__/

@@ -1,0 +1,13 @@
+[project]
+name = "taximetro"
+version = "0.1.0"
+description = "Lógica de negocio del taxímetro — Carrera por tramos, Tarifa e Importe"
+requires-python = ">=3.12"
+dependencies = []
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/taximetro"]

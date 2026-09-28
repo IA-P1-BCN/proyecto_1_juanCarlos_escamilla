@@ -1,0 +1,18 @@
+{
+    "banner": "🚕 TaxiTech — Taxímetro Digital",
+    "instrucciones": "Bienvenido. Comandos: iniciar · estado parada|movimiento · finalizar · salir",
+    "linea_libre": "🚕 libre · sin carrera",
+    "linea_en_carrera": "🚕 {estado} · {importe}",
+    "parada": "parada",
+    "en_movimiento": "en_movimiento",
+    "carrera_iniciada": "Carrera iniciada — el contador corre en parada (0,02 €/s)",
+    "carrera_finalizada": "Carrera finalizada. Importe total: {importe}",
+    "comando_desconocido": "No entiendo ese comando. Comandos: iniciar · estado parada|movimiento · finalizar · salir",
+    "badge_parada": "🅿️ PARADA",
+    "badge_movimiento": "🚕 EN_MOVIMIENTO",
+    "estado_inicial": "— pulsa 1 para iniciar la Carrera —",
+    "tui_titulo": "🚕 Taxímetro",
+    "tui_carrera_iniciada": "Carrera iniciada",
+    "tui_carrera_finalizada": "Importe total: {importe}",
+    "tui_carrera_finalizada_titulo": "🏁 Carrera finalizada"
+}

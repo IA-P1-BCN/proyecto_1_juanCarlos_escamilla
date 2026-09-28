@@ -31,7 +31,8 @@ Para regenerarla:
 ## ✨ Características
 
 - ⌨️ **CLI en tiempo real** — inicia la Carrera con un comando, cambia entre `parada` y
-  `en_movimiento`, cobra el Importe exacto con dos decimales *(Fase 1 — 🔧 en desarrollo)*
+  `en_movimiento`, cobra el Importe exacto con dos decimales; REPL de comandos y TUI a
+  pantalla completa *(Fase 1 — 🟢)*
 - 🧾 **Histórico y observabilidad** — cada carrera queda registrada en disco; logs
   estructurados; tarifas configurables sin redeployar *(Fase 2)*
 - 🔐 **Arquitectura y UX** — refactorización OO, acceso por contraseña segura, GUI para
@@ -43,15 +44,15 @@ Para regenerarla:
 
 ```mermaid
 flowchart LR
-    TAXI(["🚕<br/>estás aquí"]) -- arranca el turno --> F1
+    TAXI(["🚕<br/>estás aquí"]) -- Fase 1 completada ✔ --> F2
     subgraph CARRETERA["🛣️  Carretera de Fases"]
         direction LR
-        F1["🚩 FASE 1<br/>MVP Funcional<br/>🔧 en curso"] ==> F2["🚩 FASE 2<br/>Observabilidad<br/>⏳ pendiente"] ==> F3["🚩 FASE 3<br/>Arquitectura y UX<br/>⏳ pendiente"] ==> F4["🚩 FASE 4<br/>Producción<br/>⏳ pendiente"]
+        F1["🚩 FASE 1<br/>MVP Funcional<br/>🟢 completada"] ==> F2["🚩 FASE 2<br/>Observabilidad<br/>🔧 en curso"] ==> F3["🚩 FASE 3<br/>Arquitectura y UX<br/>⏳ pendiente"] ==> F4["🚩 FASE 4<br/>Producción<br/>⏳ pendiente"]
     end
     style TAXI fill:#facc15,stroke:#a16207,color:#111827
     style CARRETERA fill:#f3f4f6,stroke:#9ca3af
-    style F1 fill:#fde047,stroke:#ca8a04,color:#111827
-    style F2 fill:#e5e7eb,stroke:#9ca3af,color:#374151
+    style F1 fill:#86efac,stroke:#16a34a,color:#111827
+    style F2 fill:#fde047,stroke:#ca8a04,color:#111827
     style F3 fill:#e5e7eb,stroke:#9ca3af,color:#374151
     style F4 fill:#e5e7eb,stroke:#9ca3af,color:#374151
 ```
@@ -78,7 +79,8 @@ task setup        # uv sync --all-packages + hooks de pre-commit
 
 | qué quieres | con task | con uv (fallback) |
 | --- | --- | --- |
-| arrancar el CLI | `task run` | `uv run taximetro-cli` |
+| arrancar el REPL | `task run` | `uv run taximetro-cli` |
+| arrancar la TUI | `task tui` | `uv run taximetro-tui` |
 | formatear | `task format` | `uv run ruff format .` |
 | lint | `task lint` | `uv run ruff check .` |
 | tipos | `task typecheck` | `uv run mypy` |
@@ -87,27 +89,49 @@ task setup        # uv sync --all-packages + hooks de pre-commit
 
 ## 🚦 Uso
 
+### REPL de comandos — `task run`
+
+La línea de estado está siempre visible y se refresca sola cada segundo; tras
+`finalizar` puedes encadenar otra Carrera sin cerrar el programa:
+
 ```text
 $ task run
 🚕 TaxiTech — Taxímetro Digital
 Bienvenido. Comandos: iniciar · estado parada|movimiento · finalizar · salir
+🚕 libre · sin carrera
+> iniciar
+Carrera iniciada — el contador corre en parada (0,02 €/s)
+🚕 parada · 0,00 €
+> estado movimiento
+🚕 en_movimiento · 0,06 €
+> finalizar
+Carrera finalizada. Importe total: 0,26 €
+🚕 libre · sin carrera
+> salir
 ```
 
-Opciones del CLI con `task run -- --help` (equivale a `uv run taximetro-cli
---help`): autocompletado para tu shell (`--install-completion`) y la ayuda.
+Opciones con `task run -- --help` (equivale a `uv run taximetro-cli --help`).
 
-> 🚧 **En construcción — Fase 1.** Esta es la interfaz objetivo del CLI:
->
-> ```text
-> $ iniciar        # la Carrera arranca y el contador corre (0,02 €/s en parada)
-> $ estado movimiento   # el contador acelera (0,05 €/s)
-> $ finalizar      # total a cobrar: 12,40 €
-> ```
+### TUI a pantalla completa — `task tui`
+
+El puesto del conductor: contador grande que corre en tiempo real, badge de Estado
+(`🅿️ PARADA` / `🚕 EN_MOVIMIENTO`) y avisos al finalizar.
+
+| tecla | acción |
+| --- | --- |
+| `1` | Iniciar carrera |
+| `2` | Cambiar estado (parada ↔ en_movimiento) |
+| `3` | Finalizar — muestra el Importe total |
+| `q` | Salir |
 
 ## 🧭 Cómo está construido
 
-Monorepo uv con **arquitectura DDD** y contextos delimitados: `ride` · `pricing` ·
-`identity` · `fleet`, más `shared-kernel` y `shared-libs`.
+Monorepo uv minimalista: **toda la lógica de negocio en `packages/taximetro`** (capas
+DDD: `domain/` — Carrera por tramos, Tarifa, Money, eventos; `application/` — el caso
+de uso del turno con reloj inyectado; `infrastructure/` — config y EventBus) y **la
+presentación en `apps/taximetro_cli`** (REPL Typer + TUI Textual, textos en
+`textos.json`). El Importe se deriva de los tramos con un único redondeo; las tarifas
+viven en `packages/taximetro/config/tarifas.json`.
 
 - 📘 Arquitectura: [`docs/agents/architecture.md`](docs/agents/architecture.md)
 - 🗣️ Lenguaje del dominio: [`CONTEXT.md`](CONTEXT.md)

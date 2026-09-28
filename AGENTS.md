@@ -5,7 +5,10 @@ Digital taximeter prototype for TaxiTech Solutions (TTX-247): a CLI that prices 
 and an API + web panel. Requirements live in `docs/CLIENT_SPECS.md`; the clean
 architecture rules in `docs/rules_project.md`.
 
-- **Language:** Python 3.12 · **Stack:** uv monorepo (members `apps/*`, `packages/*`, `shared/*`) · DDD bounded contexts: `ride`, `pricing`, `identity`, `fleet` · CLI: Typer (commands) + Textual (live UI from T2) · texts via python-i18n (Spanish primary)
+- **Language:** Python 3.12 · **Stack:** uv monorepo (`apps/*`, `packages/*`) · one
+  business package `packages/taximetro` (DDD layers: domain / application /
+  infrastructure) · one app `apps/taximetro_cli`: Typer REPL + Textual TUI, texts in
+  `textos.json` (Spanish primary)
 
 ## Non-negotiables
 
@@ -14,11 +17,13 @@ architecture rules in `docs/rules_project.md`.
    without a failing test first. Details: `docs/agents/testing-tdd.md`.
 2. **Python best practices.** PEP 8 enforced by Ruff (format is never debated in
    review). Full standards: `docs/agents/python-standards.md`.
-3. **DDD & clean architecture.** Four bounded contexts (`packages/ride`, `pricing`,
-   `identity`, `fleet`) + the `shared/` layer; contexts never import each other — they
-   speak through `shared-kernel` types and domain events on the EventBus; `apps/*` are
-   the composition roots. Contexts are added or swap adapters between fases — never
-   rewritten. Details: `docs/agents/architecture.md`.
+3. **Layered DDD, one package.** All business logic lives in `packages/taximetro`:
+   `domain/` is pure (Carrera por tramos, Tarifa, Money, eventos — zero deps),
+   `application/` holds the use case (`ServicioTaximetro`, reloj inyectado),
+   `infrastructure/` holds config + EventBus. `apps/taximetro_cli` is presentation
+   only — no business rules in the app. The Importe is always derived from the tramos
+   (single half-up rounding), never accumulated tick by tick. Details:
+   `docs/agents/architecture.md`.
 
 ## Commands
 
@@ -26,11 +31,13 @@ architecture rules in `docs/rules_project.md`.
 uv sync --all-packages                          # install the workspace
 uv run pytest                                   # run the test suite
 uv run ruff format . && uv run ruff check .     # format + lint
-uv run taximetro-cli                            # run the CLI
+uv run taximetro-cli                            # run the REPL
+uv run taximetro-tui                            # run the TUI
 ```
 
 Human wrappers for the same commands live in `Taskfile.yml` (`task setup`, `task
-check`, `task run`; requires go-task). Agents and CI use the raw uv commands.
+check`, `task run`, `task tui`; requires go-task). Agents and CI use the raw uv
+commands.
 
 ## Agent skills
 
