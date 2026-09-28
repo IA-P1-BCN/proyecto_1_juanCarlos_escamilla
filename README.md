@@ -12,21 +12,21 @@
 
 ## 🎬 Demo
 
-> 🎬 **Demo en vídeo — próximamente.** Preparamos una demo del CLI grabada con
-> [castkit](https://github.com/deeflect/castkit): descubre el binario, planifica la
-> sesión y renderiza un GIF listo para este README.
-
-<!-- Embed real — descomentar al generar el GIF con castkit:
-
 ![Taxímetro CLI en acción](docs/assets/demo-taximetro.gif)
 
-Para regenerarla:
-    castkit handoff init apps/cli --json
-    castkit plan scaffold --session $SESSION --json
-    castkit validate --session $SESSION --script demo.json --json
-    castkit execute --session $SESSION --script demo.json --non-interactive \
-      --preset polished --format gif --output docs/assets/demo-taximetro.gif
--->
+Una Carrera completa grabada con [castkit](https://github.com/deeflect/castkit): el
+REPL arranca el turno, cambia a `en_movimiento` y finaliza; después el `historial`
+muestra el Importe persistido en disco. Para regenerarla:
+
+```bash
+castkit handoff init apps/taximetro_cli --json        # descubrimiento del binario
+castkit plan scaffold --session $SESSION --json       # guion base
+castkit validate --session $SESSION --script demo-script.json --json
+castkit execute --session $SESSION --script demo-script.json --non-interactive \
+  --preset polished --format gif --output docs/assets/demo-taximetro.gif
+```
+
+El guion vive en [`demo-script.json`](demo-script.json).
 
 ## ✨ Características
 

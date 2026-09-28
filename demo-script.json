@@ -1,0 +1,92 @@
+{
+  "version": "1",
+  "mode": "terminal",
+  "setup": [
+    {
+      "id": "setup_repo",
+      "run": "ln -s ~/projects/github/factoriaF5/proyecto_1_juanCarlos_escamilla repo",
+      "source_refs": ["ref_readme_0001"],
+      "manual_step": true,
+      "manual_reason": "castkit graba en un sandbox temporal: el repo local se enlaza para ejecutar el CLI real del workspace",
+      "artifacts": []
+    }
+  ],
+  "scenes": [
+    {
+      "id": "scene_01_turno",
+      "title": "Un turno completo: iniciar · cambiar Estado · finalizar",
+      "steps": [
+        {
+          "id": "step_01_carrera",
+          "run": "cd repo && (printf 'iniciar\\n'; sleep 2; printf 'estado movimiento\\n'; sleep 3; printf 'finalizar\\nhistorial\\nsalir\\n') | uv run taximetro-cli",
+          "expect": {
+            "contains": "Carrera finalizada. Importe total:",
+            "regex": null,
+            "exit_code": 0
+          },
+          "timeout_ms": 120000,
+          "source_refs": ["ref_readme_0001"],
+          "manual_step": true,
+          "manual_reason": "Flujo REPL documentado en el README (sección Uso): iniciar · estado parada|movimiento · finalizar · salir",
+          "artifacts": []
+        }
+      ]
+    },
+    {
+      "id": "scene_02_historico",
+      "title": "El Importe queda guardado: Histórico del día",
+      "steps": [
+        {
+          "id": "step_02_historial",
+          "run": "cd repo && printf 'historial\\nsalir\\n' | uv run taximetro-cli",
+          "expect": {
+            "contains": "Histórico ·",
+            "regex": null,
+            "exit_code": 0
+          },
+          "timeout_ms": 120000,
+          "source_refs": ["ref_readme_0001"],
+          "manual_step": true,
+          "manual_reason": "Comando historial documentado en el README (sección Uso) — persistencia entre sesiones en data/historico.json",
+          "artifacts": []
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "id": "check_suite_verde",
+      "run": "cd repo && uv run pytest -q 2>&1 | tail -1",
+      "expect": {
+        "contains": "passed",
+        "regex": null,
+        "exit_code": 0
+      },
+      "timeout_ms": 120000,
+      "source_refs": ["ref_readme_0001"],
+      "manual_step": true,
+      "manual_reason": "La CI del repo ejecuta ruff + mypy + pytest (documentado en README §Contribuir)",
+      "artifacts": []
+    }
+  ],
+  "cleanup": [],
+  "redactions": [],
+  "audio": {
+    "typing": true,
+    "music_path": null
+  },
+  "branding": {
+    "title": "TaxiTech — Taxímetro Digital",
+    "bg_primary": "#0f172a",
+    "bg_secondary": "#1e293b",
+    "text_primary": "#f8fafc",
+    "text_muted": "#94a3b8",
+    "command_text": "#e2e8f0",
+    "accent": "#facc15",
+    "watermark_text": "TTX-247",
+    "avatar_x": null,
+    "avatar_url": null,
+    "avatar_label": null
+  },
+  "web": null
+}
