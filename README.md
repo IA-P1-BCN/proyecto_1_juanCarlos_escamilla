@@ -133,13 +133,25 @@ El puesto del conductor: contador grande que corre en tiempo real, badge de Esta
 
 ## 🧭 Cómo está construido
 
-Monorepo uv con **contextos delimitados como paquetes**: `taximetro-kernel` (el
-vocabulario común: Money, Estado, Tramo, EventBus), `taximetro-ride` (la Carrera y su
-ciclo de vida), `taximetro-billing` (la Tarifa y el Importe, dueño de `tarifas.json`) y
-`taximetro` como capa de aplicación (`ServicioTaximetro` + histórico) que se importa
-como única fachada desde la app. La presentación vive en `apps/taximetro_cli` (REPL
-Typer + TUI Textual, textos en `textos.json`). El Importe se deriva de los tramos con
-un único redondeo.
+Monorepo uv con **contextos delimitados como paquetes** y la presentación en capas:
+
+```text
+packages/
+├── taximetro-kernel/     # vocabulario común: Money, Estado, Tramo, EventBus
+├── taximetro-ride/       # la Carrera y su ciclo de vida (tramos + eventos)
+├── taximetro-billing/    # Tarifa e Importe — dueño de config/tarifas.json
+└── taximetro/            # capa de aplicación: ServicioTaximetro + histórico (fachada única)
+
+apps/taximetro_cli/       # presentación, en capas
+└── src/taximetro_cli/
+    ├── main.py           # solo los puntos de entrada: taximetro-cli · taximetro-tui
+    ├── interfaces/       # cli.py (REPL) · tui.py (TUI Textual) — gui/api llegan con sus fases
+    └── infrastructure/   # composición (composition root) · reloj real · textos.json
+```
+
+El Importe se **deriva de los tramos** con un único redondeo half-up; los contextos
+nunca se importan entre sí — hablan a través del kernel y de eventos de dominio en el
+EventBus, que alimentan la bitácora de operación y el histórico del día.
 
 - 📘 Arquitectura: [`docs/agents/architecture.md`](docs/agents/architecture.md)
 - 🗣️ Lenguaje del dominio: [`CONTEXT.md`](CONTEXT.md)
