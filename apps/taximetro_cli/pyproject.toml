@@ -11,7 +11,7 @@ dependencies = [
 
 [project.scripts]
 taximetro-cli = "taximetro_cli.main:main"
-taximetro-tui = "taximetro_cli.tui:main"
+taximetro-tui = "taximetro_cli.main:main_tui"
 
 [tool.uv.sources]
 taximetro = { workspace = true }

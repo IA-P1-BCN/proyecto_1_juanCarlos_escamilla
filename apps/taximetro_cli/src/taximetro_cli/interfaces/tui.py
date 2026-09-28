@@ -1,10 +1,12 @@
-"""TUI del taxímetro: el puesto del conductor a pantalla completa (Textual)."""
+"""Interfaz TUI (Textual): el puesto del conductor a pantalla completa."""
 
 from taximetro import Estado, ServicioTaximetro, TaximetroError
 from textual.app import App, ComposeResult
 from textual.widgets import Digits, Footer, Header, Static
 
-from taximetro_cli.main import RelojReal, crear_servicio, t
+from taximetro_cli.infrastructure.composicion import crear_servicio
+from taximetro_cli.infrastructure.reloj import RelojReal
+from taximetro_cli.infrastructure.textos import t
 
 
 class TaximetroApp(App[None]):

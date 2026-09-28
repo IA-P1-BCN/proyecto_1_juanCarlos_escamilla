@@ -23,7 +23,12 @@ packages/
     │   └── infrastructure/      # historico.py — HistoricoJson (data/historico.json)
     └── tests/
 
-apps/taximetro_cli/              # solo presentación: REPL Typer + TUI Textual + textos.json
+apps/taximetro_cli/              # presentación, en capas (sin domain/ ni application/: eso vive en packages/)
+├── src/taximetro_cli/
+│   ├── main.py                  # solo los dos puntos de entrada: taximetro-cli · taximetro-tui
+│   ├── interfaces/              # cli.py (REPL) · tui.py (TUI Textual) — gui/api llegarán con sus fases
+│   └── infrastructure/          # composicion.py (composition root) · reloj.py · textos.py + textos.json
+└── tests/
 ```
 
 ## Rules

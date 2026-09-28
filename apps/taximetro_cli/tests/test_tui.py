@@ -3,7 +3,7 @@
 from datetime import UTC, datetime
 
 from taximetro import Estado
-from taximetro_cli.tui import crear_tui
+from taximetro_cli.interfaces.tui import crear_tui
 from textual.widgets import Digits, Static
 
 

@@ -4,7 +4,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 from taximetro import BitacoraJSON, HistoricoJson
-from taximetro_cli.main import crear_app
+from taximetro_cli.interfaces.cli import crear_app
 from taximetro_log import leer
 from typer.testing import CliRunner
 
