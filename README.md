@@ -77,6 +77,8 @@ task setup        # uv sync --all-packages + hooks de pre-commit
 | lint | `task lint` | `uv run ruff check .` |
 | tipos | `task typecheck` | `uv run mypy` |
 | tests | `task test` | `uv run pytest` |
+| tests + cobertura | `task test-cov` | `uv run pytest --cov` |
+| resultados Allure | `task allure` | `uv run pytest --alluredir=allure-results` |
 | todo lo que exige la CI | `task check` | los cuatro anteriores |
 
 ## 🚦 Uso
@@ -155,6 +157,34 @@ de higiene de ficheros).
 
 **Checklist del README en cada PR:** si cerraste una Fase, **mueve el 🚕** al siguiente
 tramo del diagrama y pon su banner en 🟢.
+
+## 🧪 Tests y cobertura
+
+**68 tests · 92 % de cobertura** sobre los seis paquetes (rama incluida), con tres
+niveles:
+
+- **Unitarios por contexto** — tramos y aggregate (`taximetro-ride`), derivación del
+  Importe con redondeo único (`taximetro-billing`), bitácora (`taximetro-log`),
+  servicio e histórico (`taximetro`), REPL (CliRunner) y TUI (pilot de Textual),
+  siempre con reloj inyectado.
+- **Criterios de aceptación** —
+  [`test_criterios_aceptacion.py`](apps/taximetro_cli/tests/test_criterios_aceptacion.py)
+  recupera el criterio literal de cada issue de las Fases 1 y 2 (#5–#7, #16–#19) y lo
+  verifica uno a uno.
+- **Integración del binario** —
+  [`test_integracion_binario.py`](apps/taximetro_cli/tests/test_integracion_binario.py)
+  compila `bin/taximetro` con PyInstaller y conduce la TUI real en un pty: turno
+  completo, Importe con dos decimales y persistencia de histórico y bitácora.
+
+```bash
+task test        # la suite entera
+task test-cov    # con cobertura por paquete (líneas que faltan incluidas)
+task allure      # resultados Allure en allure-results/
+```
+
+El informe **Allure** se publica por PR desde la CI (badge de Tests arriba);
+localmente, `task allure` genera los resultados y `allure serve allure-results`
+los abre en el navegador.
 
 ## 📄 Licencia
 

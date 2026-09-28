@@ -38,6 +38,16 @@ tasks:
     cmds:
       - uv run pytest
 
+  test-cov:
+    desc: Suite con cobertura (por paquete, con líneas que faltan)
+    cmds:
+      - uv run pytest --cov --cov-report=term-missing
+
+  allure:
+    desc: Genera resultados Allure en allure-results (informe HTML en la CI)
+    cmds:
+      - uv run pytest --alluredir=allure-results --clean-alluredir
+
   check:
     desc: Todo lo que exige la CI en un PR (formato + lint + tipos + tests)
     cmds:

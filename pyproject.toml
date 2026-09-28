@@ -14,6 +14,8 @@ dev = [
     "pre-commit>=4",
     "pytest-asyncio>=0.24",
     "pyinstaller>=6.22.3",
+    "pytest-cov>=7.1.0",
+    "allure-pytest>=2.16.1",
 ]
 
 [tool.uv.workspace]
@@ -22,6 +24,21 @@ members = ["apps/*", "packages/*"]
 [tool.pytest.ini_options]
 testpaths = ["packages", "apps"]
 asyncio_mode = "auto"
+
+[tool.coverage.run]
+source_pkgs = [
+    "taximetro",
+    "taximetro_kernel",
+    "taximetro_ride",
+    "taximetro_billing",
+    "taximetro_log",
+    "taximetro_cli",
+]
+branch = true
+
+[tool.coverage.report]
+show_missing = true
+skip_empty = true
 
 [tool.ruff]
 line-length = 88
