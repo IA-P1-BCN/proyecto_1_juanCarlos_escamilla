@@ -87,6 +87,7 @@ jobs:
 
       - name: Índice de informes (raíz de Pages)
         run: |
+          rm -f allure-history/index.html  # el action lo deja read-only
           python3 - <<'PY'
           import pathlib
 
