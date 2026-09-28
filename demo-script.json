@@ -7,68 +7,33 @@
       "run": "ln -s ~/projects/github/factoriaF5/proyecto_1_juanCarlos_escamilla repo",
       "source_refs": ["ref_readme_0001"],
       "manual_step": true,
-      "manual_reason": "castkit graba en un sandbox temporal: el repo local se enlaza para ejecutar el CLI real del workspace",
+      "manual_reason": "castkit graba en un sandbox temporal: el repo local se enlaza para ejecutar el binario real",
       "artifacts": []
     }
   ],
   "scenes": [
     {
-      "id": "scene_01_turno",
-      "title": "Un turno completo: iniciar · cambiar Estado · finalizar",
+      "id": "scene_01_tui",
+      "title": "El turno del taxista — TUI: iniciar · cambiar Estado · finalizar",
       "steps": [
         {
-          "id": "step_01_carrera",
-          "run": "cd repo && (printf 'iniciar\\n'; sleep 2; printf 'estado movimiento\\n'; sleep 3; printf 'finalizar\\nhistorial\\nsalir\\n') | uv run taximetro-cli",
+          "id": "step_tui_turno",
+          "run": "cd repo && python3 scripts/demo-tui-driver.py ./bin/taximetro",
           "expect": {
-            "contains": "Carrera finalizada. Importe total:",
+            "contains": "Carrera finalizada",
             "regex": null,
             "exit_code": 0
           },
           "timeout_ms": 120000,
           "source_refs": ["ref_readme_0001"],
           "manual_step": true,
-          "manual_reason": "Flujo REPL documentado en el README (sección Uso): iniciar · estado parada|movimiento · finalizar · salir",
-          "artifacts": []
-        }
-      ]
-    },
-    {
-      "id": "scene_02_historico",
-      "title": "El Importe queda guardado: Histórico del día",
-      "steps": [
-        {
-          "id": "step_02_historial",
-          "run": "cd repo && printf 'historial\\nsalir\\n' | uv run taximetro-cli",
-          "expect": {
-            "contains": "Histórico ·",
-            "regex": null,
-            "exit_code": 0
-          },
-          "timeout_ms": 120000,
-          "source_refs": ["ref_readme_0001"],
-          "manual_step": true,
-          "manual_reason": "Comando historial documentado en el README (sección Uso) — persistencia entre sesiones en data/historico.json",
+          "manual_reason": "La TUI necesita teclas crudas con ritmo fijo (1·3s·2·5s·2·4s·3·2s·q): el driver pty de scripts/ las inyecta y castkit graba el relay",
           "artifacts": []
         }
       ]
     }
   ],
-  "checks": [
-    {
-      "id": "check_suite_verde",
-      "run": "cd repo && uv run pytest -q 2>&1 | tail -1",
-      "expect": {
-        "contains": "passed",
-        "regex": null,
-        "exit_code": 0
-      },
-      "timeout_ms": 120000,
-      "source_refs": ["ref_readme_0001"],
-      "manual_step": true,
-      "manual_reason": "La CI del repo ejecuta ruff + mypy + pytest (documentado en README §Contribuir)",
-      "artifacts": []
-    }
-  ],
+  "checks": [],
   "cleanup": [],
   "redactions": [],
   "audio": {

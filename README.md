@@ -12,21 +12,21 @@
 
 ## 🎬 Demo
 
-![Taxímetro CLI en acción](docs/assets/demo-taximetro.gif)
+![Taxímetro TUI en acción](docs/assets/demo-taximetro.gif)
 
-Una Carrera completa grabada con [castkit](https://github.com/deeflect/castkit): el
-REPL arranca el turno, cambia a `en_movimiento` y finaliza; después el `historial`
-muestra el Importe persistido en disco. Para regenerarla:
+El turno completo en la TUI del conductor, grabado sobre el binario nativo: `1` inicia
+la Carrera (3 s), `2` pasa a `en_movimiento` (5 s), `2` vuelve a `parada` (4 s), `3`
+finaliza — con el Importe total exacto en pantalla — y `q` sale. Para regenerarla:
 
 ```bash
-castkit handoff init apps/taximetro_cli --json        # descubrimiento del binario
-castkit plan scaffold --session $SESSION --json       # guion base
-castkit validate --session $SESSION --script demo-script.json --json
-castkit execute --session $SESSION --script demo-script.json --non-interactive \
-  --preset polished --format gif --output docs/assets/demo-taximetro.gif
+task bin                                                    # binario nativo
+python3 scripts/demo-tui-driver.py bin/taximetro demo.cast  # graba la sesión (.cast)
+agg demo.cast docs/assets/demo-taximetro.gif \
+  --theme dracula --font-size 20 --idle-time-limit 5 --last-frame-duration 2
 ```
 
-El guion vive en [`demo-script.json`](demo-script.json).
+El ritmo de teclas vive en [`scripts/demo-tui-driver.py`](scripts/demo-tui-driver.py);
+para renderizar hace falta [agg](https://github.com/asciinema/agg) (`brew install agg`).
 
 ## ✨ Características
 
