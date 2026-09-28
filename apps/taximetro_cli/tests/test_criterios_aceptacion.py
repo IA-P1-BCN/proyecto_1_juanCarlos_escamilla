@@ -3,11 +3,13 @@
 Cada test recupera UN criterio literal de las issues #5 #6 #7 #16 #17 #18 #19
 y lo verifica por las costuras pactadas (API pública del paquete y borde del REPL),
 con reloj inyectado. Pensado para alimentar el informe Allure: epic = Fase,
-story = issue.
+story = issue, issue-link a la historia y vídeo del criterio como attachment
+(docs/assets/tests/, regenerables con scripts/tests-videos.py).
 """
 
 import json
 import re
+from collections.abc import Generator
 from pathlib import Path
 
 import allure
@@ -33,9 +35,35 @@ from typer.testing import CliRunner
 
 TARIFA_EMT = Tarifa(parada_centimos_por_segundo=2, movimiento_centimos_por_segundo=5)
 runner = CliRunner()
+_ISSUE = "https://github.com/IA-P1-BCN/proyecto_1_juanCarlos_escamilla/issues/"
+_VIDEOS = Path(__file__).resolve().parents[3] / "docs" / "assets" / "tests"
 
 EPIC_F1 = allure.epic("Fase 1 — MVP Funcional")
 EPIC_F2 = allure.epic("Fase 2 — Observabilidad y Persistencia")
+
+
+_criterio_actual = {"nombre": ""}
+
+
+@pytest.fixture(autouse=True)
+def _enlace_del_criterio(request: pytest.FixtureRequest) -> Generator[None]:
+    """Enlaza el test con su historia; `_adjuntar_video()` pone el vídeo."""
+    _criterio_actual["nombre"] = request.node.originalname
+    numero = re.match(r"test_ac(\d+)_", request.node.originalname)
+    if numero:
+        allure.dynamic.issue(f"{_ISSUE}{numero.group(1)}", name=f"#{numero.group(1)}")
+    yield
+
+
+def _adjuntar_video() -> None:
+    """Adjunta al resultado Allure el vídeo del criterio (desde el cuerpo del test)."""
+    video = _VIDEOS / f"{_criterio_actual['nombre']}.gif"
+    if video.exists():
+        allure.attach.file(
+            str(video),
+            name="vídeo: el criterio en ejecución",
+            attachment_type=allure.attachment_type.GIF,
+        )
 
 
 def _servicio(instantes, historico=None):
@@ -59,6 +87,7 @@ def _servicio(instantes, historico=None):
 @allure.story("#16 Instrucciones al arrancar + iniciar Carrera en parada")
 @allure.title("AC: al arrancar muestra las instrucciones sin documentación externa")
 def test_ac16_instrucciones_al_arrancar() -> None:
+    _adjuntar_video()
     resultado = runner.invoke(crear_app(RelojFalso([])), [], input="salir\n")
 
     assert "Bienvenido. Comandos:" in resultado.output
@@ -68,6 +97,7 @@ def test_ac16_instrucciones_al_arrancar() -> None:
 @allure.story("#16 Instrucciones al arrancar + iniciar Carrera en parada")
 @allure.title("AC: un solo comando inicia la Carrera y cobra desde el arranque")
 def test_ac16_un_comando_inicia_y_cobra_desde_el_arranque() -> None:
+    _adjuntar_video()
     servicio, _ = _servicio([hora(10), hora(10, 0, 5)])
 
     servicio.iniciar()
@@ -80,6 +110,7 @@ def test_ac16_un_comando_inicia_y_cobra_desde_el_arranque() -> None:
 @allure.story("#16 Instrucciones al arrancar + iniciar Carrera en parada")
 @allure.title("AC: el Importe parte de 0,00 € y se acumula de forma continua")
 def test_ac16_importe_parte_de_cero() -> None:
+    _adjuntar_video()
     servicio, _ = _servicio([hora(10), hora(10)])
 
     servicio.iniciar()
@@ -92,6 +123,7 @@ def test_ac16_importe_parte_de_cero() -> None:
 @allure.title("AC: tras t segundos en parada, exactamente 0,02 × t €")
 @pytest.mark.parametrize("segundos,centimos", [(7, 14), (10, 20), (63, 126)])
 def test_ac16_0_02_por_segundo_exacto(segundos: int, centimos: int) -> None:
+    _adjuntar_video()
     minuto, segundo = divmod(segundos, 60)
     servicio, _ = _servicio([hora(10), hora(10, minuto, segundo)])
 
@@ -104,6 +136,7 @@ def test_ac16_0_02_por_segundo_exacto(segundos: int, centimos: int) -> None:
 @allure.story("#16 Instrucciones al arrancar + iniciar Carrera en parada")
 @allure.title("AC: ride emite CarreraIniciada al iniciar")
 def test_ac16_emite_carrera_iniciada() -> None:
+    _adjuntar_video()
     servicio, eventos = _servicio([hora(10), hora(10)])
 
     servicio.iniciar()
@@ -118,6 +151,7 @@ def test_ac16_emite_carrera_iniciada() -> None:
 @allure.story("#17 Cambiar Estado a en_movimiento (0,05 €/s por tramo)")
 @allure.title("AC: el conductor puede indicar el estado en cada momento")
 def test_ac17_indicar_estado_en_cada_momento() -> None:
+    _adjuntar_video()
     servicio, _ = _servicio([hora(10), hora(10, 0, 5), hora(10, 0, 10)])
 
     servicio.iniciar()
@@ -131,6 +165,7 @@ def test_ac17_indicar_estado_en_cada_momento() -> None:
 @allure.story("#17 Cambiar Estado a en_movimiento (0,05 €/s por tramo)")
 @allure.title("AC: cada tramo aplica su tarifa (0,02 / 0,05 €/s)")
 def test_ac17_cada_tramo_su_tarifa() -> None:
+    _adjuntar_video()
     tramo_parada = _servicio([hora(10), hora(10, 0, 5)])
     tramo_parada[0].iniciar()
     assert tramo_parada[0].importe.centimos == 10  # 5 s × 2 c/s
@@ -147,6 +182,7 @@ def test_ac17_cada_tramo_su_tarifa() -> None:
 @allure.story("#17 Cambiar Estado a en_movimiento (0,05 €/s por tramo)")
 @allure.title("AC: cambiar de Estado no detiene la acumulación ni la reinicia")
 def test_ac17_cambiar_no_detiene_ni_reinicia() -> None:
+    _adjuntar_video()
     servicio, _ = _servicio([hora(10), hora(10, 0, 5), hora(10, 0, 5), hora(10, 0, 6)])
 
     servicio.iniciar()
@@ -162,6 +198,7 @@ def test_ac17_cambiar_no_detiene_ni_reinicia() -> None:
 @allure.story("#17 Cambiar Estado a en_movimiento (0,05 €/s por tramo)")
 @allure.title("AC: t1 s en parada + t2 s en movimiento = 0,02·t1 + 0,05·t2")
 def test_ac17_formula_por_tramos() -> None:
+    _adjuntar_video()
     servicio, _ = _servicio([hora(10), hora(10, 0, 5), hora(10, 0, 20)])
 
     servicio.iniciar()
@@ -174,6 +211,7 @@ def test_ac17_formula_por_tramos() -> None:
 @allure.story("#17 Cambiar Estado a en_movimiento (0,05 €/s por tramo)")
 @allure.title("AC: ride emite EstadoCambiado en cada cambio")
 def test_ac17_emite_estado_cambiado() -> None:
+    _adjuntar_video()
     servicio, eventos = _servicio([hora(10), hora(10, 0, 5)])
 
     servicio.iniciar()
@@ -191,6 +229,7 @@ def test_ac17_emite_estado_cambiado() -> None:
 @allure.story("#18 Finalizar y mostrar el Importe con dos decimales")
 @allure.title("AC: un comando cierra la Carrera y muestra el Importe total")
 def test_ac18_comando_finaliza_y_muestra_total() -> None:
+    _adjuntar_video()
     resultado = runner.invoke(
         crear_app(RelojFalso([hora(10), hora(10), hora(10, 0, 10)])),
         [],
@@ -204,6 +243,7 @@ def test_ac18_comando_finaliza_y_muestra_total() -> None:
 @allure.story("#18 Finalizar y mostrar el Importe con dos decimales")
 @allure.title("AC: el total se muestra en euros con dos decimales")
 def test_ac18_total_con_dos_decimales() -> None:
+    _adjuntar_video()
     resultado = runner.invoke(
         crear_app(RelojFalso([hora(10), hora(10), hora(10, 0, 10)])),
         [],
@@ -217,6 +257,7 @@ def test_ac18_total_con_dos_decimales() -> None:
 @allure.story("#18 Finalizar y mostrar el Importe con dos decimales")
 @allure.title("AC: el total es la suma exacta de todos los tramos")
 def test_ac18_total_suma_exacta_de_tramos() -> None:
+    _adjuntar_video()
     servicio, _ = _servicio([hora(10), hora(10, 0, 5), hora(10, 0, 20)])
 
     servicio.iniciar()
@@ -230,6 +271,7 @@ def test_ac18_total_suma_exacta_de_tramos() -> None:
 @allure.story("#18 Finalizar y mostrar el Importe con dos decimales")
 @allure.title("AC: sin redondeo intermedio — un único redondeo al final")
 def test_ac18_sin_redondeo_intermedio() -> None:
+    _adjuntar_video()
     servicio = _servicio([hora(10), hora(10, 0, 1, 500000)])[0]
 
     servicio.iniciar()
@@ -246,6 +288,7 @@ def test_ac18_sin_redondeo_intermedio() -> None:
 @allure.story("#18 Finalizar y mostrar el Importe con dos decimales")
 @allure.title("AC: ride emite CarreraFinalizada al cerrar")
 def test_ac18_emite_carrera_finalizada() -> None:
+    _adjuntar_video()
     # El evento lleva el momento del cierre; el Importe lo deriva billing del
     # tramo cerrado en ese instante (ADR 0005: ride no conoce tarifas).
     servicio, eventos = _servicio([hora(10), hora(10, 0, 10)])
@@ -268,6 +311,7 @@ def test_ac18_emite_carrera_finalizada() -> None:
 @allure.story("#19 Encadenar carreras sin cerrar el programa")
 @allure.title("AC: tras finalizar se puede iniciar otra Carrera de inmediato")
 def test_ac19_iniciar_otra_de_inmediato() -> None:
+    _adjuntar_video()
     servicio, _ = _servicio([hora(10), hora(10, 0, 10), hora(10, 0, 10)])
 
     servicio.iniciar()
@@ -281,6 +325,7 @@ def test_ac19_iniciar_otra_de_inmediato() -> None:
 @allure.story("#19 Encadenar carreras sin cerrar el programa")
 @allure.title("AC: cada nueva Carrera arranca con el acumulador a 0,00 €")
 def test_ac19_nueva_carrera_a_cero() -> None:
+    _adjuntar_video()
     servicio, _ = _servicio(
         [hora(10), hora(10, 0, 10), hora(10, 0, 10), hora(10, 0, 10)]
     )
@@ -296,6 +341,7 @@ def test_ac19_nueva_carrera_a_cero() -> None:
 @allure.story("#19 Encadenar carreras sin cerrar el programa")
 @allure.title("AC: varias carreras consecutivas producen totales independientes")
 def test_ac19_totales_independientes() -> None:
+    _adjuntar_video()
     servicio, _ = _servicio(
         [hora(10), hora(10, 0, 10), hora(10, 0, 10), hora(10, 0, 15), hora(10, 0, 20)]
     )
@@ -314,6 +360,7 @@ def test_ac19_totales_independientes() -> None:
 @allure.story("#19 Encadenar carreras sin cerrar el programa")
 @allure.title("AC: el programa no se cierra entre carreras")
 def test_ac19_programa_no_se_cierra() -> None:
+    _adjuntar_video()
     resultado = runner.invoke(
         crear_app(
             RelojFalso(
@@ -335,6 +382,7 @@ def test_ac19_programa_no_se_cierra() -> None:
 @allure.story("#5 Histórico de carreras del día para cuadrar caja")
 @allure.title("AC: al finalizar se guardan fecha, duración e importe permanentes")
 def test_ac5_guarda_fecha_duracion_importe(tmp_path: Path) -> None:
+    _adjuntar_video()
     historico = HistoricoJson(tmp_path / "historico.json")
     servicio = ServicioTaximetro(
         tarifa=TARIFA_EMT,
@@ -356,6 +404,7 @@ def test_ac5_guarda_fecha_duracion_importe(tmp_path: Path) -> None:
 @allure.story("#5 Histórico de carreras del día para cuadrar caja")
 @allure.title("AC: escritura incremental; disponible en la siguiente sesión")
 def test_ac5_incremental_y_entre_sesiones(tmp_path: Path) -> None:
+    _adjuntar_video()
     ruta = tmp_path / "historico.json"
 
     def turno() -> None:
@@ -379,6 +428,7 @@ def test_ac5_incremental_y_entre_sesiones(tmp_path: Path) -> None:
 @allure.story("#5 Histórico de carreras del día para cuadrar caja")
 @allure.title("AC: se puede consultar el histórico del día para cuadrar caja")
 def test_ac5_consulta_del_dia(tmp_path: Path) -> None:
+    _adjuntar_video()
     historico = HistoricoJson(tmp_path / "historico.json")
     resultado = runner.invoke(
         crear_app(
@@ -400,6 +450,7 @@ def test_ac5_consulta_del_dia(tmp_path: Path) -> None:
 @allure.story("#6 Logs de operación para diagnosticar errores")
 @allure.title("AC: se registran arranque, cambios de estado, cierre y errores")
 def test_ac6_registra_todo_el_ciclo_y_errores(tmp_path: Path) -> None:
+    _adjuntar_video()
     ruta = tmp_path / "taximetro.log"
     bitacora = BitacoraJSON(ruta)
 
@@ -424,6 +475,7 @@ def test_ac6_registra_todo_el_ciclo_y_errores(tmp_path: Path) -> None:
 @allure.story("#6 Logs de operación para diagnosticar errores")
 @allure.title("AC: log estructurado, accesible sin intervenir el proceso")
 def test_ac6_estructurado_y_accesible(tmp_path: Path) -> None:
+    _adjuntar_video()
     ruta = tmp_path / "taximetro.log"
     bitacora = BitacoraJSON(ruta)
     bus = EventBus()
@@ -445,6 +497,7 @@ def test_ac6_estructurado_y_accesible(tmp_path: Path) -> None:
 @allure.story("#7 Cambiar tarifas por fichero de configuración")
 @allure.title("AC: las tarifas se modifican editando un fichero externo")
 def test_ac7_tarifas_desde_fichero(tmp_path: Path) -> None:
+    _adjuntar_video()
     fichero = tmp_path / "tarifas.json"
     fichero.write_text(
         '{"parada_eur_segundo": 0.03, "movimiento_eur_segundo": 0.10}',
@@ -460,6 +513,7 @@ def test_ac7_tarifas_desde_fichero(tmp_path: Path) -> None:
 @allure.story("#7 Cambiar tarifas por fichero de configuración")
 @allure.title("AC: sin tocar código ni redeployar para actualizar tarifas")
 def test_ac7_actualizar_sin_redeployar(tmp_path: Path) -> None:
+    _adjuntar_video()
     fichero = tmp_path / "tarifas.json"
     fichero.write_text(
         '{"parada_eur_segundo": 0.02, "movimiento_eur_segundo": 0.05}',
