@@ -1,6 +1,6 @@
 # -*- mode: python ; coding: utf-8 -*-
 # Binario nativo del taxímetro: `task bin` → bin/taximetro (onefile, macOS arm64).
-# Sin args arranca el REPL; `taximetro tui` abre la TUI (dispatcher en __main__.py).
+# La entrada es la TUI del conductor (interfaces/tui.py) — no hay REPL en el binario.
 
 import os
 

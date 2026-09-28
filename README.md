@@ -81,9 +81,8 @@ task setup        # uv sync --all-packages + hooks de pre-commit
 
 | qué quieres | con task | con uv (fallback) |
 | --- | --- | --- |
-| arrancar el REPL | `task run` | `uv run taximetro-cli` |
+| arrancar la TUI | `task run-tui` | `uv run taximetro-tui` |
 | compilar el binario | `task bin` | — |
-| arrancar la TUI | `task tui` | `uv run taximetro-tui` |
 | formatear | `task format` | `uv run ruff format .` |
 | lint | `task lint` | `uv run ruff check .` |
 | tipos | `task typecheck` | `uv run mypy` |
@@ -135,12 +134,12 @@ El puesto del conductor: contador grande que corre en tiempo real, badge de Esta
 ### Binario nativo — `task bin`
 
 `task bin` compila **`bin/taximetro`**, un ejecutable autocontenido (PyInstaller,
-~14 MB, macOS arm64) que no necesita uv ni venv: lo copias donde quieras y arranca.
+~14 MB, macOS arm64) que no necesita uv ni venv: lo copias donde quieras y arranca
+la TUI del conductor directamente.
 
 ```bash
 task bin
-./bin/taximetro          # REPL de comandos
-./bin/taximetro tui      # la TUI a pantalla completa
+./bin/taximetro      # la TUI a pantalla completa
 ```
 
 Los datos (Histórico y bitácora) se escriben en `data/` junto al directorio desde

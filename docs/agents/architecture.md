@@ -51,9 +51,10 @@ apps/taximetro_cli/              # presentación, en capas (sin domain/ ni appli
    `historial_consultado`. Read-side resources (tarifas.json, textos.json) resolve via
    `sys._MEIPASS` when frozen (PyInstaller) and via the package path in dev.
 6. **The native binary** (`task bin` → `bin/taximetro`, gitignored) is built with
-   PyInstaller from `apps/taximetro_cli/taximetro.spec`: onefile, entry
-   `__main__.py` (no args → REPL, `tui` → TUI), bundled datas tarifas.json +
-   textos.json. macOS arm64 — build where you run.
+   PyInstaller from `apps/taximetro_cli/taximetro.spec`: onefile, entry `__main__.py`
+   → the TUI only (no REPL in the binary; the REPL stays as the `taximetro-cli`
+   console script for uv users). Bundled datas: tarifas.json + textos.json.
+   macOS arm64 — build where you run.
 
 ## Testing seams (pre-agreed)
 
