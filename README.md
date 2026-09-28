@@ -5,7 +5,8 @@
 
 ![CI](https://github.com/IA-P1-BCN/proyecto_1_juanCarlos_escamilla/actions/workflows/pr-checks.yml/badge.svg)
 [![Release](https://img.shields.io/github/v/release/IA-P1-BCN/proyecto_1_juanCarlos_escamilla)](https://github.com/IA-P1-BCN/proyecto_1_juanCarlos_escamilla/releases)
-[![Tests — Allure](https://img.shields.io/badge/tests-Allure%20report-50AF82?logo=allure&logoColor=white)](https://ia-p1-bcn.github.io/proyecto_1_juanCarlos_escamilla/)
+[![Tests — Allure](https://img.shields.io/badge/tests-Allure%20report-50AF82?logo=allure&logoColor=white)](https://ia-p1-bcn.github.io/proyecto_1_juanCarlos_escamilla/main/)
+![Coverage](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/IA-P1-BCN/proyecto_1_juanCarlos_escamilla/gh-pages/coverage.json)
 ![Python](https://img.shields.io/badge/python-3.12-blue?logo=python&logoColor=white)
 ![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge.json)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
