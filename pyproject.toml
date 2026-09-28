@@ -1,7 +1,7 @@
 [project]
 name = "stn-taximetro"
 version = "0.1.0"
-description = "TaxiTech — Taxímetro Digital: monorepo uv con arquitectura DDD"
+description = "TaxiTech — Taxímetro Digital"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = []
@@ -12,13 +12,16 @@ dev = [
     "ruff>=0.8",
     "mypy>=1.13",
     "pre-commit>=4",
+    "pytest-asyncio>=0.24",
+    "pyinstaller>=6.22.3",
 ]
 
 [tool.uv.workspace]
-members = ["apps/*", "packages/*", "shared/*"]
+members = ["apps/*", "packages/*"]
 
 [tool.pytest.ini_options]
-testpaths = ["packages/tests/tests"]
+testpaths = ["packages", "apps"]
+asyncio_mode = "auto"
 
 [tool.ruff]
 line-length = 88
@@ -31,8 +34,4 @@ select = ["E", "F", "I", "B", "UP"]
 python_version = "3.12"
 check_untyped_defs = true
 warn_return_any = true
-files = ["apps", "packages", "shared"]
-
-[[tool.mypy.overrides]]
-module = "i18n"
-ignore_missing_imports = true
+files = ["apps", "packages"]

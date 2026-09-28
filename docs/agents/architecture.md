@@ -1,142 +1,64 @@
-# Architecture — DDD bounded contexts in a uv monorepo
+# Architecture
 
-Canonical sources: `docs/rules_project.md` (clean-architecture principles, Factoria F5
-deck), `docs/CLIENT_SPECS.md` (requirements, fases, US table), and the ADRs in `docs/adr/`
-(decisions and deliberate deviations).
+Bounded contexts as workspace packages with a minimal shared kernel (ADR 0005, which
+keeps ADR 0004's tramo model and single-derivation Importe). The app depends only on
+the `taximetro` facade.
 
-## Principles (non-negotiable)
-
-1. **Separation of responsibilities** — business logic never mixes with storage or
-   interface code.
-2. **Independent layers** — the database or web framework can be replaced without
-   rewriting the core.
-3. **Low coupling** — a change in one part must not force edits across ten files.
-4. **Testable code** — pieces are separated precisely so each is testable on its own.
-
-## Monorepo layout
+## Layout
 
 ```
-stn-taximetro/
-├── pyproject.toml                     # uv workspace root — members: apps/*, packages/*, shared/*
-├── uv.lock
-├── apps/                              # entregables (entry doors) — the composition roots
-│   ├── cli/                           # Fases 1–2 — interactive console (src/cli)
-│   ├── gui/                           # Fase 3 — Tkinter, tablet-mounted (src/gui)
-│   └── api/                           # Fase 4 — FastAPI + fleet web dashboard (src/api)
-├── packages/                          # bounded contexts (business)
-│   ├── ride/                          # src/ride — carrera lifecycle & vehicle state machine (F1)
-│   ├── pricing/                       # src/pricing — tariff engine & financial calculation (F1)
-│   ├── identity/                      # src/identity — auth, roles, secure password hashing (F3)
-│   ├── fleet/                         # src/fleet — histórico, auditoría, informe de caja (F2)
-│   └── tests/                         # src/tests — pytest + Allure suite (imports everything)
-└── shared/                            # modules shared across contexts
-    ├── shared-kernel/                 # src/shared_kernel — Money, Entity, AggregateRoot,
-    │                                  #   ValueObject, DomainEvent, base domain exceptions
-    └── shared-libs/                   # src/shared_libs — structured logging, config loader
-                                       #   (tarifas.json), in-memory EventBus, security, db
+packages/
+├── taximetro-kernel/            # vocabulario común: Money, Estado, Tramo, EventBus, errores
+│   └── src/taximetro_kernel/
+├── taximetro-ride/              # contexto ride: Carrera + eventos del ciclo de vida
+│   └── src/taximetro_ride/
+├── taximetro-billing/           # contexto billing: Tarifa, calcular_importe, config/tarifas.json
+│   └── src/taximetro_billing/
+├── taximetro-log/               # contexto log: BitacoraJSON — JSON-lines rotativo (US-06)
+│   └── src/taximetro_log/
+└── taximetro/                   # capa de aplicación: ServicioTaximetro + histórico (fachada)
+    ├── src/taximetro/
+    │   ├── application/         # servicio.py — el turno, reloj inyectado, guarda registro
+    │   ├── domain/              # registro.py — CarreraRegistro (proyección del histórico)
+    │   └── infrastructure/      # historico.py — HistoricoJson (data/historico.json)
+    └── tests/
+
+apps/taximetro_cli/              # presentación, en capas (sin domain/ ni application/: eso vive en packages/)
+├── src/taximetro_cli/
+│   ├── main.py                  # solo los dos puntos de entrada: taximetro-cli · taximetro-tui
+│   ├── interfaces/              # cli.py (REPL) · tui.py (TUI Textual) — gui/api llegarán con sus fases
+│   └── infrastructure/          # composicion.py (composition root) · reloj.py · textos.py + textos.json
+└── tests/
 ```
 
-Inside every bounded context (`packages/<context>/`):
+## Rules
 
-```
-domain/          # entities, value objects, state machines — pure, zero deps
-application/     # use cases + ports.py (consumer-owned Protocols)
-infrastructure/  # adapters: config readers, repositories, external clients
-```
+1. **Contexts never import contexts.** `taximetro-ride` and `taximetro-billing` speak
+   only through `taximetro-kernel` types (`Tramo`, `Estado`, `Money`) and domain events.
+   The kernel imports nothing from the workspace.
+2. **The Importe is always derived** from the tramos (`calcular_importe`) with exact
+   `Decimal` math and a single half-up rounding at the end — never accumulated by ticks.
+3. **`taximetro` is the application layer** — `ServicioTaximetro` orchestrates the turno
+   and owns the histórico port (`RepositorioHistorico`). Its `__init__` re-exports the
+   composed public API so `apps/*` import everything from `taximetro` alone.
+4. **Apps are presentation only** — REPL/TUI translate commands/keys into service calls
+   and paint. The clock is always injected (`crear_app(reloj)` / `crear_tui(reloj)`).
+5. **billing owns `config/tarifas.json`** (US-07); the histórico and the bitácora are
+   written to `data/` under the current working directory (overridable with
+   `TAXIMETRO_DATA`) — never inside the packages, so the frozen binary can write its
+   data too. `taximetro-log` knows no domain: the application layer maps domain events
+   to bitácora entries (`registrar_eventos`); the app logs `arranque`, `error` and
+   `historial_consultado`. Read-side resources (tarifas.json, textos.json) resolve via
+   `sys._MEIPASS` when frozen (PyInstaller) and via the package path in dev.
+6. **The native binary** (`task bin` → `bin/taximetro`, gitignored) is built with
+   PyInstaller from `apps/taximetro_cli/taximetro.spec`: onefile, entry `__main__.py`
+   → the TUI only (no REPL in the binary; the REPL stays as the `taximetro-cli`
+   console script for uv users). Bundled datas: tarifas.json + textos.json.
+   macOS arm64 — build where you run.
 
-## CLI stack
+## Testing seams (pre-agreed)
 
-- **Typer** — the command interface: the `taximetro-cli` console script and the commands each
-  fase adds.
-- **Textual** — the live meter UI (real-time counter, non-blocking), adopted from T2 onward.
-- **python-i18n** — every user-facing text goes through `i18n.t`; no hardcoded strings.
-  Locale files live inside the cli package (`locales/es.yml`,
-  `filename_format = {locale}.{format}`) and **PyYAML must be an explicit dependency**
-  (python-i18n fails silently without it). Spanish is the main language; adding
-  `locales/en.yml` is enough to translate.
-
-## The four bounded contexts
-
-| Context | Type | Owns | Emits / consumes |
-| --- | --- | --- | --- |
-| `ride` | Core domain | Carrera lifecycle: `iniciar`, `cambiar_estado` (`parada`/`en_movimiento`), `finalizar`; the vehicle state machine | Emits `CarreraIniciada`, `EstadoCambiado`, `CarreraFinalizada` |
-| `pricing` | Core domain | Tariff engine & financial rules: motor de tarifas, cálculo del importe; rates loadable from external config without redeploy (US-07) | Consumes ride events to price carreras |
-| `identity` | Supporting | Password auth (Bcrypt/Argon2 hashing), roles & permissions (US-08) | — |
-| `fleet` | Analysis / read model | Histórico of finished carreras, auditoría, InformeCaja (US-05). Projection of ride in early fases; relational Read Model in F4 | Consumes ride events |
-
-## Shared layer
-
-- **shared-kernel** — the ubiquitous-language building blocks every context speaks:
-  `Money`, `Entity`, `AggregateRoot`, `ValueObject`, `DomainEvent`, and the base domain
-  exception hierarchy (`TaximetroError`). Depends on nothing.
-- **shared-libs** — business-agnostic technical plumbing: structured logging (US-06),
-  config loader (pydantic-settings; `tarifas.json`), in-memory **EventBus** (pub/sub),
-  security helpers, DB connection. Depends on nothing business-wise.
-
-## Dependency rules (the iron rules)
-
-1. **Contexts never import contexts.** They communicate only through domain events on
-   the EventBus and `shared-kernel` types. No exceptions.
-2. **`shared-kernel` and `shared-libs` are leaves** — they import nothing from the
-   workspace.
-3. **`domain/` imports nothing** from `application/`, `infrastructure/`, or other
-   packages.
-4. **Ports are consumer-owned**: the Protocol lives in the needing context's
-   `application/ports.py`; the adapter lives on the providing side's `infrastructure/`
-   and implements it. Swapping an adapter must never touch the consumer.
-5. **Apps are the composition roots** — the only place that imports across boundaries
-   to wire adapters, subscribe projections to the EventBus, and inject dependencies.
-   Constructor injection only; no DI framework.
-6. **`packages/tests` may import everything**; nothing imports it.
-
-```
-apps/* ──► packages/* ──► shared/*
-   │             │
-   │             ▼
-   │      contexts never import each other
-   │      (domain events via EventBus + shared-kernel types)
-   └──► wires everything at composition time
-```
-
-## SOLID & DRY in this structure
-
-- **S** — one context per reason-to-change: fare regulations → `pricing`; auth rules →
-  `identity`; storage technology → `infrastructure` adapters; one layer per
-  responsibility (see the layer table in `docs/rules_project.md`).
-- **O** — new capabilities extend: a new adapter implements an existing port; a new door
-  (`gui`, `api`) reuses the same contexts.
-- **L** — adapters are interchangeable because contract tests pin each port's behavior
-  (see `testing-tdd.md`).
-- **I** — one small port per concern (rate loading, ledger persistence), never a
-  god-interface.
-- **D** — contexts depend on abstractions (ports, `DomainEvent`), never on another
-  context's concrete model.
-- **DRY** — a domain rule is stated exactly once, in the context that owns it. Apps
-  never re-implement fare math; `fleet` never re-derives the importe (it stores what
-  `CarreraFinalizada` carries). Logic earns a place in `shared/` only on its second
-  real consumer.
-
-## Fase scaling — contexts are added, never rewritten
-
-- **Fase 1 — MVP (US-01…04, current):** `ride` + `pricing` + `apps/cli` exist. Tariffs
-  are hardcoded defaults inside `pricing`'s domain — the meter never knows where rates
-  come from.
-- **Fase 2 — Observabilidad (US-05…07):** `fleet` appears — subscribes to ride events on
-  the EventBus, persists each finished carrera as an immutable `CarreraRegistro` (JSON
-  ledger), serves the Histórico and the InformeCaja. `shared-libs` gains structured
-  logging; `pricing` externalizes tariffs to `tarifas.json` via the config loader
-  (US-07).
-- **Fase 3 — Arquitectura y UX (US-08…09):** `identity` appears (secure password
-  hashing, roles); `apps/gui` opens as a new door over the same contexts.
-- **Fase 4 — Producción:** `fleet`'s ledger migrates to a relational read model behind
-  the same port (adapter swap + contract tests, zero consumer changes); `apps/api`
-  (FastAPI + fleet dashboard) opens; one-command deploy.
-
-The constant: existing contexts only ever gain use cases or swap adapters — no fase
-rewrites another context's domain.
-
-## Collaboration rule (why this matters for agents)
-
-Before writing a change, name the context and the layer it belongs to. If you cannot
-place it, stop and ask — don't invent a location. Clean structure + PEP 8 is what lets
-human and agent edits land in the right place without stepping on each other.
+1. **Package public APIs** (`taximetro_ride`, `taximetro_billing`, `taximetro`) —
+   behavior with a scripted fake clock; billing tests build kernel `Tramo`s directly.
+2. **CLI edge** — Typer `CliRunner` with scripted `input=` + fake clock.
+3. **TUI pilot** — Textual `App.run_test()` + `pilot.press` with a fake clock.

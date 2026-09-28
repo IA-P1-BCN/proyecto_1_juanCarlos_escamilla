@@ -12,28 +12,17 @@
 
 ## 🎬 Demo
 
-> 🎬 **Demo en vídeo — próximamente.** Preparamos una demo del CLI grabada con
-> [castkit](https://github.com/deeflect/castkit): descubre el binario, planifica la
-> sesión y renderiza un GIF listo para este README.
-
-<!-- Embed real — descomentar al generar el GIF con castkit:
-
-![Taxímetro CLI en acción](docs/assets/demo-taximetro.gif)
-
-Para regenerarla:
-    castkit handoff init apps/cli --json
-    castkit plan scaffold --session $SESSION --json
-    castkit validate --session $SESSION --script demo.json --json
-    castkit execute --session $SESSION --script demo.json --non-interactive \
-      --preset polished --format gif --output docs/assets/demo-taximetro.gif
--->
+![Taxímetro TUI en acción](docs/assets/demo-taximetro.gif)
 
 ## ✨ Características
 
 - ⌨️ **CLI en tiempo real** — inicia la Carrera con un comando, cambia entre `parada` y
-  `en_movimiento`, cobra el Importe exacto con dos decimales *(Fase 1 — 🔧 en desarrollo)*
-- 🧾 **Histórico y observabilidad** — cada carrera queda registrada en disco; logs
-  estructurados; tarifas configurables sin redeployar *(Fase 2)*
+  `en_movimiento`, cobra el Importe exacto con dos decimales; REPL de comandos y TUI a
+  pantalla completa *(Fase 1 — 🟢)*
+- 🧾 **Histórico y observabilidad** — cada carrera queda registrada en disco
+  (`historial` para cuadrar caja) y la operación completa llega a una bitácora
+  JSON-lines (arranque, cambios de estado, cierre, errores) *(Fase 2 — 🟢)*; tarifas
+  configurables en `tarifas.json` *(✔)*
 - 🔐 **Arquitectura y UX** — refactorización OO, acceso por contraseña segura, GUI para
   tablet con botones grandes *(Fase 3)*
 - 🌐 **Producción** — histórico en base de datos, API REST, panel web y despliegue con un
@@ -43,15 +32,15 @@ Para regenerarla:
 
 ```mermaid
 flowchart LR
-    TAXI(["🚕<br/>estás aquí"]) -- arranca el turno --> F1
+    TAXI(["🚕<br/>estás aquí"]) -- Fase 2 completada ✔ --> F3
     subgraph CARRETERA["🛣️  Carretera de Fases"]
         direction LR
-        F1["🚩 FASE 1<br/>MVP Funcional<br/>🔧 en curso"] ==> F2["🚩 FASE 2<br/>Observabilidad<br/>⏳ pendiente"] ==> F3["🚩 FASE 3<br/>Arquitectura y UX<br/>⏳ pendiente"] ==> F4["🚩 FASE 4<br/>Producción<br/>⏳ pendiente"]
+        F1["🚩 FASE 1<br/>MVP Funcional<br/>🟢 completada"] ==> F2["🚩 FASE 2<br/>Observabilidad<br/>🟢 completada"] ==> F3["🚩 FASE 3<br/>Arquitectura y UX<br/>⏳ pendiente"] ==> F4["🚩 FASE 4<br/>Producción<br/>⏳ pendiente"]
     end
     style TAXI fill:#facc15,stroke:#a16207,color:#111827
     style CARRETERA fill:#f3f4f6,stroke:#9ca3af
-    style F1 fill:#fde047,stroke:#ca8a04,color:#111827
-    style F2 fill:#e5e7eb,stroke:#9ca3af,color:#374151
+    style F1 fill:#86efac,stroke:#16a34a,color:#111827
+    style F2 fill:#86efac,stroke:#16a34a,color:#111827
     style F3 fill:#e5e7eb,stroke:#9ca3af,color:#374151
     style F4 fill:#e5e7eb,stroke:#9ca3af,color:#374151
 ```
@@ -62,7 +51,10 @@ Cada Fase es un milestone con sus historias: [`Fase 1`](https://github.com/IA-P1
 
 ## 🛠️ Instalación
 
-Requisitos: Python 3.12+, [uv](https://docs.astral.sh/uv/) y
+**Para usarlo**, compila el binario una sola vez: `task bin` → `./bin/taximetro`,
+ejecutable autocontenido sin Python, uv ni venv (ver «Binario nativo» más abajo).
+
+**Para desarrollar**: Python 3.12+, [uv](https://docs.astral.sh/uv/) y
 [Task](https://taskfile.dev) (`brew install go-task`; [otras formas de
 instalarlo](https://taskfile.dev/installation/)).
 
@@ -78,7 +70,8 @@ task setup        # uv sync --all-packages + hooks de pre-commit
 
 | qué quieres | con task | con uv (fallback) |
 | --- | --- | --- |
-| arrancar el CLI | `task run` | `uv run taximetro-cli` |
+| arrancar la TUI | `task run-tui` | `uv run taximetro-tui` |
+| compilar el binario | `task bin` | — |
 | formatear | `task format` | `uv run ruff format .` |
 | lint | `task lint` | `uv run ruff check .` |
 | tipos | `task typecheck` | `uv run mypy` |
@@ -87,27 +80,59 @@ task setup        # uv sync --all-packages + hooks de pre-commit
 
 ## 🚦 Uso
 
-```text
-$ task run
-🚕 TaxiTech — Taxímetro Digital
-Bienvenido. Comandos: iniciar · estado parada|movimiento · finalizar · salir
+Arranca el puesto del conductor con `task run-tui` — o `./bin/taximetro` si ya
+compilaste el binario:
+
+| tecla | acción |
+| --- | --- |
+| `1` | Iniciar carrera |
+| `2` | Cambiar estado (parada ↔ en_movimiento) |
+| `3` | Finalizar — muestra el Importe total |
+| `q` | Salir |
+
+El contador corre en tiempo real, el badge muestra el Estado (`🅿️ PARADA` /
+`🚕 EN_MOVIMIENTO`) y al finalizar aparece el Importe total exacto con dos
+decimales. Los datos quedan en `data/`: el Histórico del día y la bitácora de
+operación.
+
+> ¿Terminal clásica? `uv run taximetro-cli` abre el mismo turno como REPL de
+> comandos (`iniciar` · `estado parada\|movimiento` · `finalizar` · `historial`).
+
+### Binario nativo — `task bin`
+
+`task bin` compila **`bin/taximetro`**, un ejecutable autocontenido (PyInstaller,
+~14 MB, macOS arm64) que no necesita uv ni venv: lo copias donde quieras y arranca
+la TUI del conductor directamente.
+
+```bash
+task bin
+./bin/taximetro      # la TUI a pantalla completa
 ```
 
-Opciones del CLI con `task run -- --help` (equivale a `uv run taximetro-cli
---help`): autocompletado para tu shell (`--install-completion`) y la ayuda.
-
-> 🚧 **En construcción — Fase 1.** Esta es la interfaz objetivo del CLI:
->
-> ```text
-> $ iniciar        # la Carrera arranca y el contador corre (0,02 €/s en parada)
-> $ estado movimiento   # el contador acelera (0,05 €/s)
-> $ finalizar      # total a cobrar: 12,40 €
-> ```
+Los datos (Histórico y bitácora) se escriben en `data/` junto al directorio desde
+el que se ejecuta — overridable con la variable `TAXIMETRO_DATA`.
 
 ## 🧭 Cómo está construido
 
-Monorepo uv con **arquitectura DDD** y contextos delimitados: `ride` · `pricing` ·
-`identity` · `fleet`, más `shared-kernel` y `shared-libs`.
+Monorepo uv con **contextos delimitados como paquetes** y la presentación en capas:
+
+```text
+packages/
+├── taximetro-kernel/     # vocabulario común: Money, Estado, Tramo, EventBus
+├── taximetro-ride/       # la Carrera y su ciclo de vida (tramos + eventos)
+├── taximetro-billing/    # Tarifa e Importe — dueño de config/tarifas.json
+└── taximetro/            # capa de aplicación: ServicioTaximetro + histórico (fachada única)
+
+apps/taximetro_cli/       # presentación, en capas
+└── src/taximetro_cli/
+    ├── main.py           # solo los puntos de entrada: taximetro-cli · taximetro-tui
+    ├── interfaces/       # cli.py (REPL) · tui.py (TUI Textual) — gui/api llegan con sus fases
+    └── infrastructure/   # composición (composition root) · reloj real · textos.json
+```
+
+El Importe se **deriva de los tramos** con un único redondeo half-up; los contextos
+nunca se importan entre sí — hablan a través del kernel y de eventos de dominio en el
+EventBus, que alimentan la bitácora de operación y el histórico del día.
 
 - 📘 Arquitectura: [`docs/agents/architecture.md`](docs/agents/architecture.md)
 - 🗣️ Lenguaje del dominio: [`CONTEXT.md`](CONTEXT.md)

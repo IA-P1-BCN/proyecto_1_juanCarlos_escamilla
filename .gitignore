@@ -4,6 +4,14 @@
 .AppleDouble
 .LSOverride
 Thumbs.db
+.history/
+
+# --- Datos en runtime (histórico JSON, bitácora) ---
+data/
+packages/taximetro/data/
+packages/taximetro-log/data/
+.castkit/
+bin/
 
 # --- Python ---
 __pycache__/
