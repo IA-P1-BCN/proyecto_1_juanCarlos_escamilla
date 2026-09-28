@@ -24,7 +24,7 @@ from termios import TIOCSWINSZ
 PROMPT = b"$ "  # prompt de bash --norc
 COMANDO = "task run-tui"
 # Fase shell: tecleo del comando (70 ms por carácter) + Enter
-FASE_SHELL = [(i * 0.07, c) for i, c in enumerate(COMANDO)] + [(1.0, "\r")]
+FASE_SHELL = [(i * 0.07, c) for i, c in enumerate(COMANDO)] + [(4.0, "\r")]
 # Fase TUI (segundos desde el montaje de la TUI): el turno del taxista
 FASE_TUI = [(0.3, "1"), (3.3, "2"), (8.3, "2"), (12.3, "3"), (14.3, "q")]
 MONTAJE = b"pulsa 1"  # texto del estado inicial: la TUI ya está en pantalla
