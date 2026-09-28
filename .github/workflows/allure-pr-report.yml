@@ -85,6 +85,39 @@ jobs:
           subfolder: ${{ steps.vars.outputs.subfolder }}
           keep_reports: 20
 
+      - name: Índice de informes (raíz de Pages)
+        run: |
+          python3 - <<'PY'
+          import pathlib
+
+          raiz = pathlib.Path("allure-history")
+          prs = sorted(
+              (p for p in raiz.glob("pr-*") if p.is_dir()),
+              key=lambda p: int(p.name.split("-")[1]),
+              reverse=True,
+          )
+          filas = ['<li><a href="main/">main — último estado</a></li>']
+          filas += [
+              f'<li><a href="{p.name}/">PR #{p.name.split("-")[1]}</a></li>' for p in prs
+          ]
+          html = (
+              "<!DOCTYPE html>\n"
+              '<html lang="es"><head><meta charset="utf-8">'
+              "<title>Taxímetro — informes Allure</title>"
+              '<meta name="viewport" content="width=device-width, initial-scale=1">'
+              "<style>body{font-family:system-ui,sans-serif;background:#0f172a;"
+              "color:#f8fafc;max-width:40rem;margin:3rem auto;padding:0 1rem}"
+              "h1{color:#facc15}a{color:#facc15;text-decoration:none}"
+              "li{margin:.4rem 0}p{color:#94a3b8}</style></head>\n"
+              "<body><h1>🚕 Informes Allure</h1>"
+              "<p>Un informe por PR y el estado de main — se conservan los últimos 20.</p>"
+              f"<ul>{''.join(filas)}</ul></body></html>\n"
+          )
+          pathlib.Path("allure-index.html").write_text(html, encoding="utf-8")
+          PY
+          # el action (Docker) deja index.html root-owned: se sobreescribe con sudo
+          sudo install -m 0644 allure-index.html allure-history/index.html
+
       - name: Deploy Report to gh-pages Branch
         uses: peaceiris/actions-gh-pages@v4
         with:
