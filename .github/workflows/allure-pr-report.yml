@@ -89,16 +89,21 @@ jobs:
         run: |
           python3 - <<'PY'
           import pathlib
+          import subprocess
 
-          raiz = pathlib.Path("allure-history")
-          prs = sorted(
-              (p for p in raiz.glob("pr-*") if p.is_dir()),
-              key=lambda p: int(p.name.split("-")[1]),
-              reverse=True,
-          )
+          # Fuente de verdad: lo que ya vive en gh-pages (el clone del action
+          # solo contiene el informe de ESTA ejecución) + lo generado ahora.
+          en_branch = subprocess.run(
+              ["git", "ls-tree", "--name-only", "origin/gh-pages"],
+              capture_output=True,
+              text=True,
+          ).stdout.split()
+          locales = [p.name for p in pathlib.Path("allure-history").glob("pr-*")]
+          numeros = {n.split("-")[1] for n in en_branch if n.startswith("pr-")}
+          numeros |= {n.split("-")[1] for n in locales}
           filas = ['<li><a href="main/">main — último estado</a></li>']
           filas += [
-              f'<li><a href="{p.name}/">PR #{p.name.split("-")[1]}</a></li>' for p in prs
+              f'<li><a href="pr-{n}/">PR #{n}</a></li>' for n in sorted(numeros, key=int, reverse=True)
           ]
           html = (
               "<!DOCTYPE html>\n"
