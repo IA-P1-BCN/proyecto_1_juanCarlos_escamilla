@@ -4,7 +4,7 @@ from taximetro import Estado, ServicioTaximetro, TaximetroError
 from textual.app import App, ComposeResult
 from textual.widgets import Digits, Footer, Header, Static
 
-from taximetro_cli.main import RelojMonotono, crear_servicio, t
+from taximetro_cli.main import RelojReal, crear_servicio, t
 
 
 class TaximetroApp(App[None]):
@@ -105,4 +105,4 @@ def crear_tui(reloj) -> TaximetroApp:
 
 def main() -> None:
     """Ejecuta la TUI a pantalla completa."""
-    crear_tui(RelojMonotono()).run()
+    crear_tui(RelojReal()).run()

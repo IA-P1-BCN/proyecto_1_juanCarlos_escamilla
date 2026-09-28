@@ -1,5 +1,7 @@
 """ServicioTaximetro: el turno del taxista con reloj inyectado (spec #14, #17–#19)."""
 
+from datetime import UTC, datetime
+
 import pytest
 from taximetro import (
     CarreraFinalizada,
@@ -12,36 +14,39 @@ from taximetro import (
     cargar_tarifa,
 )
 
+TARIFA_EMT = Tarifa(parada_centimos_por_segundo=2, movimiento_centimos_por_segundo=5)
+
+
+def hora(h: int, m: int = 0, s: int = 0) -> datetime:
+    return datetime(2026, 9, 28, h, m, s, tzinfo=UTC)
+
 
 class RelojFalso:
     """Doble de prueba: devuelve instantes guiñados uno a uno (reloj inyectado)."""
 
-    def __init__(self, instantes: list[float]) -> None:
+    def __init__(self, instantes: list[datetime]) -> None:
         self._instantes = instantes
         self._indice = 0
 
-    def ahora(self) -> float:
+    def __call__(self) -> datetime:
         instante = self._instantes[min(self._indice, len(self._instantes) - 1)]
         self._indice += 1
         return instante
 
 
-TARIFA_EMT = Tarifa(parada_centimos_por_segundo=2, movimiento_centimos_por_segundo=5)
-
-
-def _servicio(instantes: list[float]) -> tuple[ServicioTaximetro, list[object]]:
+def _servicio(instantes: list[datetime]) -> tuple[ServicioTaximetro, list[object]]:
     eventos: list[object] = []
     bus = EventBus()
     for tipo in (CarreraIniciada, EstadoCambiado, CarreraFinalizada):
         bus.suscribir(tipo, eventos.append)
     servicio = ServicioTaximetro(
-        tarifa=TARIFA_EMT, reloj=RelojFalso(instantes).ahora, publicar=bus.publicar
+        tarifa=TARIFA_EMT, reloj=RelojFalso(instantes), publicar=bus.publicar
     )
     return servicio, eventos
 
 
 def test_iniciar_arranca_en_parada_desde_0_00() -> None:
-    servicio, eventos = _servicio([0.0, 0.0])
+    servicio, eventos = _servicio([hora(10), hora(10)])
 
     servicio.iniciar()
 
@@ -52,8 +57,8 @@ def test_iniciar_arranca_en_parada_desde_0_00() -> None:
 
 
 def test_el_importe_corre_5s_parada_15s_movimiento() -> None:
-    # iniciar@0 → cambiar@5 → lectura en curso con hasta=20
-    servicio, _ = _servicio([0.0, 5.0, 20.0])
+    # iniciar@10:00 → cambiar@10:00:05 → lectura en curso con hasta=10:00:20
+    servicio, _ = _servicio([hora(10), hora(10, 0, 5), hora(10, 0, 20)])
 
     servicio.iniciar()
     servicio.cambiar_estado(Estado.EN_MOVIMIENTO)
@@ -62,7 +67,7 @@ def test_el_importe_corre_5s_parada_15s_movimiento() -> None:
 
 
 def test_finalizar_devuelve_el_importe_total_y_emite_evento() -> None:
-    servicio, eventos = _servicio([0.0, 5.0, 20.0])
+    servicio, eventos = _servicio([hora(10), hora(10, 0, 5), hora(10, 0, 20)])
 
     servicio.iniciar()
     servicio.cambiar_estado(Estado.EN_MOVIMIENTO)
@@ -74,7 +79,9 @@ def test_finalizar_devuelve_el_importe_total_y_emite_evento() -> None:
 
 
 def test_encadenar_segunda_carrera_arranca_de_cero() -> None:
-    servicio, _ = _servicio([0.0, 10.0, 10.0, 10.0])
+    servicio, _ = _servicio(
+        [hora(10), hora(10, 0, 10), hora(10, 0, 10), hora(10, 0, 10)]
+    )
 
     servicio.iniciar()
     assert servicio.finalizar().formato() == "0,20 €"
@@ -93,7 +100,7 @@ def test_finalizar_o_cambiar_sin_carrera_es_error() -> None:
 
 
 def test_iniciar_con_carrera_en_curso_es_error() -> None:
-    servicio, _ = _servicio([0.0, 0.0])
+    servicio, _ = _servicio([hora(10), hora(10)])
 
     servicio.iniciar()
 

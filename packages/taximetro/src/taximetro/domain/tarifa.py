@@ -2,6 +2,7 @@
 
 from collections.abc import Sequence
 from dataclasses import dataclass
+from datetime import datetime
 from decimal import ROUND_HALF_UP, Decimal
 
 from taximetro.domain.carrera import Tramo
@@ -23,7 +24,7 @@ class Tarifa:
 
 
 def calcular_importe(
-    tramos: Sequence[Tramo], tarifa: Tarifa, hasta: float | None = None
+    tramos: Sequence[Tramo], tarifa: Tarifa, hasta: datetime | None = None
 ) -> Money:
     """Deriva el Importe de los tramos; el último abierto corre hasta `hasta`.
 
@@ -34,6 +35,6 @@ def calcular_importe(
         fin = tramo.fin if tramo.fin is not None else hasta
         if fin is None:
             continue
-        duracion = Decimal(str(fin - tramo.inicio))
+        duracion = Decimal(str((fin - tramo.inicio).total_seconds()))
         total += duracion * tarifa.centimos_por_segundo(tramo.estado)
     return Money(centimos=int(total.quantize(Decimal("1"), rounding=ROUND_HALF_UP)))

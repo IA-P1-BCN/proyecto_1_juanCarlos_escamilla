@@ -33,8 +33,9 @@ Para regenerarla:
 - ⌨️ **CLI en tiempo real** — inicia la Carrera con un comando, cambia entre `parada` y
   `en_movimiento`, cobra el Importe exacto con dos decimales; REPL de comandos y TUI a
   pantalla completa *(Fase 1 — 🟢)*
-- 🧾 **Histórico y observabilidad** — cada carrera queda registrada en disco; logs
-  estructurados; tarifas configurables sin redeployar *(Fase 2)*
+- 🧾 **Histórico y observabilidad** — cada carrera queda registrada en disco
+  (`historial` para cuadrar caja); logs estructurados *(Fase 2 — 🔧 en curso)*; tarifas
+  configurables en `tarifas.json` *(✔)*
 - 🔐 **Arquitectura y UX** — refactorización OO, acceso por contraseña segura, GUI para
   tablet con botones grandes *(Fase 3)*
 - 🌐 **Producción** — histórico en base de datos, API REST, panel web y despliegue con un
@@ -97,7 +98,7 @@ La línea de estado está siempre visible y se refresca sola cada segundo; tras
 ```text
 $ task run
 🚕 TaxiTech — Taxímetro Digital
-Bienvenido. Comandos: iniciar · estado parada|movimiento · finalizar · salir
+Bienvenido. Comandos: iniciar · estado parada|movimiento · finalizar · historial [YYYY-MM-DD] · salir
 🚕 libre · sin carrera
 > iniciar
 Carrera iniciada — el contador corre en parada (0,02 €/s)
@@ -107,6 +108,11 @@ Carrera iniciada — el contador corre en parada (0,02 €/s)
 > finalizar
 Carrera finalizada. Importe total: 0,26 €
 🚕 libre · sin carrera
+> historial
+Histórico · 28/09/2026
+FECHA          DURACIÓN  IMPORTE
+28/09 12:02   00:00:07   0,26 €
+1 carreras · 0,26 € totales
 > salir
 ```
 

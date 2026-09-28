@@ -1,18 +1,24 @@
 """TUI (Textual): el puesto del conductor con reloj inyectado (spec #14, #16–#19)."""
 
+from datetime import UTC, datetime
+
 from taximetro import Estado
 from taximetro_cli.tui import crear_tui
 from textual.widgets import Digits, Static
 
 
+def hora(h: int, m: int = 0, s: int = 0) -> datetime:
+    return datetime(2026, 9, 28, h, m, s, tzinfo=UTC)
+
+
 class RelojFalso:
     """Doble de prueba: devuelve instantes guiñados uno a uno (reloj inyectado)."""
 
-    def __init__(self, instantes: list[float]) -> None:
+    def __init__(self, instantes: list[datetime]) -> None:
         self._instantes = instantes
         self._indice = 0
 
-    def __call__(self) -> float:
+    def __call__(self) -> datetime:
         instante = self._instantes[min(self._indice, len(self._instantes) - 1)]
         self._indice += 1
         return instante
@@ -29,7 +35,11 @@ async def test_el_puesto_del_conductor_arranca_libre() -> None:
 
 
 async def test_teclas_1_2_3_llevan_la_carrera_completa() -> None:
-    app = crear_tui(RelojFalso([0.0, 0.0, 5.0, 20.0, 20.0]))
+    app = crear_tui(
+        RelojFalso(
+            [hora(10), hora(10), hora(10, 0, 5), hora(10, 0, 20), hora(10, 0, 20)]
+        )
+    )
     async with app.run_test() as pilot:
         estado = app.query_one("#estado", Static)
 

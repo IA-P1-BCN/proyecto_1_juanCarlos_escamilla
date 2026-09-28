@@ -3,7 +3,7 @@
 import json
 import sys
 import threading
-import time
+from datetime import UTC, date, datetime
 from pathlib import Path
 
 import typer
@@ -12,6 +12,8 @@ from rich.text import Text
 from taximetro import (
     Estado,
     EventBus,
+    HistoricoJson,
+    Money,
     ServicioTaximetro,
     TaximetroError,
     cargar_tarifa,
@@ -35,17 +37,20 @@ def t(clave: str, **valores: str) -> str:
     return texto.format(**valores) if valores else texto
 
 
-class RelojMonotono:
-    """Reloj real del sistema: monotónico, inmune a saltos del reloj de pared."""
+class RelojReal:
+    """Reloj de pared del sistema: fechas reales para la Carrera y el histórico."""
 
-    def __call__(self) -> float:
-        return time.monotonic()
+    def __call__(self) -> datetime:
+        return datetime.now(UTC)
 
 
-def crear_servicio(reloj) -> ServicioTaximetro:
-    """Composition root: tarifas del fichero de config y eventos al EventBus."""
+def crear_servicio(reloj, historico: HistoricoJson | None = None) -> ServicioTaximetro:
+    """Composition root: tarifas del config, eventos al bus e histórico en JSON."""
     return ServicioTaximetro(
-        tarifa=cargar_tarifa(), reloj=reloj, publicar=EventBus().publicar
+        tarifa=cargar_tarifa(),
+        reloj=reloj,
+        publicar=EventBus().publicar,
+        historico=historico or HistoricoJson(),
     )
 
 
@@ -62,6 +67,39 @@ def linea_estado(servicio: ServicioTaximetro) -> str:
     )
 
 
+def _duracion(segundos: float) -> str:
+    total = int(segundos)
+    horas, resto = divmod(total, 3600)
+    minutos, segundos = divmod(resto, 60)
+    return f"{horas:02d}:{minutos:02d}:{segundos:02d}"
+
+
+def _mostrar_historial(servicio: ServicioTaximetro, dia: date) -> None:
+    registros = servicio.historial_del_dia(dia)
+    dia_texto = dia.strftime("%d/%m/%Y")
+    if not registros:
+        typer.echo(t("historial_vacio", dia=dia_texto))
+        return
+    typer.echo(t("historial_titulo", dia=dia_texto))
+    typer.echo(t("historial_cabecera"))
+    for registro in registros:
+        typer.echo(
+            f"{registro.inicio.astimezone():%d/%m %H:%M}   "
+            f"{_duracion(registro.duracion_segundos)}   {registro.importe.formato()}"
+        )
+    total = Money(centimos=sum(r.importe.centimos for r in registros))
+    typer.echo(t("historial_pie", n=str(len(registros)), total=total.formato()))
+
+
+def _parsear_dia(texto: str) -> date | None:
+    if not texto:
+        return date.today()
+    try:
+        return date.fromisoformat(texto)
+    except ValueError:
+        return None
+
+
 def ejecutar_comando(servicio: ServicioTaximetro, comando: str) -> None:
     verbo, _, resto = comando.partition(" ")
     try:
@@ -74,6 +112,12 @@ def ejecutar_comando(servicio: ServicioTaximetro, comando: str) -> None:
             servicio.cambiar_estado(_ESTADOS_POR_PALABRA[resto])
         elif verbo == "finalizar" and not resto:
             typer.echo(t("carrera_finalizada", importe=servicio.finalizar().formato()))
+        elif verbo == "historial":
+            dia = _parsear_dia(resto.strip())
+            if dia is None:
+                typer.echo(t("historial_dia_invalido"))
+            else:
+                _mostrar_historial(servicio, dia)
         else:
             typer.echo(t("comando_desconocido"))
     except TaximetroError as error:
@@ -94,9 +138,9 @@ def bucle(servicio: ServicioTaximetro) -> None:
             ejecutar_comando(servicio, comando)
 
 
-def sesion(reloj) -> None:
+def sesion(reloj, historico: HistoricoJson | None = None) -> None:
     """Arranca el turno; en terminal interactiva la línea se refresca sola."""
-    servicio = crear_servicio(reloj)
+    servicio = crear_servicio(reloj, historico)
     if not sys.stdout.isatty():
         bucle(servicio)
         return
@@ -115,7 +159,7 @@ def sesion(reloj) -> None:
             parar.set()
 
 
-def crear_app(reloj) -> typer.Typer:
+def crear_app(reloj, historico: HistoricoJson | None = None) -> typer.Typer:
     """App Typer con el reloj inyectado (los tests pasan uno falso)."""
     app = typer.Typer(help=t("banner"), invoke_without_command=True)
 
@@ -124,12 +168,12 @@ def crear_app(reloj) -> typer.Typer:
         """Muestra el banner, las instrucciones y arranca la sesión interactiva."""
         typer.echo(t("banner"))
         typer.echo(t("instrucciones"))
-        sesion(reloj)
+        sesion(reloj, historico)
 
     return app
 
 
-app = crear_app(RelojMonotono())
+app = crear_app(RelojReal())
 
 
 def main() -> None:

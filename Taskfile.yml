@@ -7,12 +7,7 @@ tasks:
       - uv sync --all-packages
       - uv run pre-commit install
 
-  run:
-    desc: Arranca el CLI del taxímetro (taximetro-cli)
-    cmds:
-      - uv run taximetro-cli
-
-  tui:
+  run-tui:
     desc: Arranca la TUI a pantalla completa (taximetro-tui)
     cmds:
       - uv run taximetro-tui
