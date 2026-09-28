@@ -65,7 +65,10 @@ Cada Fase es un milestone con sus historias: [`Fase 1`](https://github.com/IA-P1
 
 ## 🛠️ Instalación
 
-Requisitos: Python 3.12+, [uv](https://docs.astral.sh/uv/) y
+**Para usarlo**, compila el binario una sola vez: `task bin` → `./bin/taximetro`,
+ejecutable autocontenido sin Python, uv ni venv (ver «Binario nativo» más abajo).
+
+**Para desarrollar**: Python 3.12+, [uv](https://docs.astral.sh/uv/) y
 [Task](https://taskfile.dev) (`brew install go-task`; [otras formas de
 instalarlo](https://taskfile.dev/installation/)).
 
@@ -91,38 +94,8 @@ task setup        # uv sync --all-packages + hooks de pre-commit
 
 ## 🚦 Uso
 
-### REPL de comandos — `task run`
-
-La línea de estado está siempre visible y se refresca sola cada segundo; tras
-`finalizar` puedes encadenar otra Carrera sin cerrar el programa:
-
-```text
-$ task run
-🚕 TaxiTech — Taxímetro Digital
-Bienvenido. Comandos: iniciar · estado parada|movimiento · finalizar · historial [YYYY-MM-DD] · salir
-🚕 libre · sin carrera
-> iniciar
-Carrera iniciada — el contador corre en parada (0,02 €/s)
-🚕 parada · 0,00 €
-> estado movimiento
-🚕 en_movimiento · 0,06 €
-> finalizar
-Carrera finalizada. Importe total: 0,26 €
-🚕 libre · sin carrera
-> historial
-Histórico · 28/09/2026
-FECHA          DURACIÓN  IMPORTE
-28/09 12:02   00:00:07   0,26 €
-1 carreras · 0,26 € totales
-> salir
-```
-
-Opciones con `task run -- --help` (equivale a `uv run taximetro-cli --help`).
-
-### TUI a pantalla completa — `task tui`
-
-El puesto del conductor: contador grande que corre en tiempo real, badge de Estado
-(`🅿️ PARADA` / `🚕 EN_MOVIMIENTO`) y avisos al finalizar.
+Arranca el puesto del conductor con `task run-tui` — o `./bin/taximetro` si ya
+compilaste el binario:
 
 | tecla | acción |
 | --- | --- |
@@ -130,6 +103,14 @@ El puesto del conductor: contador grande que corre en tiempo real, badge de Esta
 | `2` | Cambiar estado (parada ↔ en_movimiento) |
 | `3` | Finalizar — muestra el Importe total |
 | `q` | Salir |
+
+El contador corre en tiempo real, el badge muestra el Estado (`🅿️ PARADA` /
+`🚕 EN_MOVIMIENTO`) y al finalizar aparece el Importe total exacto con dos
+decimales. Los datos quedan en `data/`: el Histórico del día y la bitácora de
+operación.
+
+> ¿Terminal clásica? `uv run taximetro-cli` abre el mismo turno como REPL de
+> comandos (`iniciar` · `estado parada\|movimiento` · `finalizar` · `historial`).
 
 ### Binario nativo — `task bin`
 
