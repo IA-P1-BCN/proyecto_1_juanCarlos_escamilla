@@ -1,0 +1,23 @@
+{
+    "banner": "🚕 TaxiTech — Taxímetro Digital",
+    "instrucciones": "Bienvenido. Comandos: iniciar · estado parada|movimiento · finalizar · historial [YYYY-MM-DD] · salir",
+    "linea_libre": "🚕 libre · sin carrera",
+    "linea_en_carrera": "🚕 {estado} · {importe}",
+    "parada": "parada",
+    "en_movimiento": "en_movimiento",
+    "carrera_iniciada": "Carrera iniciada — el contador corre en parada (0,02 €/s)",
+    "carrera_finalizada": "Carrera finalizada. Importe total: {importe}",
+    "comando_desconocido": "No entiendo ese comando. Comandos: iniciar · estado parada|movimiento · finalizar · historial [YYYY-MM-DD] · salir",
+    "historial_titulo": "Histórico · {dia}",
+    "historial_cabecera": "FECHA          DURACIÓN  IMPORTE",
+    "historial_vacio": "Sin carreras finalizadas el {dia}.",
+    "historial_pie": "{n} carreras · {total} totales",
+    "historial_dia_invalido": "Formato de día inválido: usa YYYY-MM-DD",
+    "badge_parada": "🅿️ PARADA",
+    "badge_movimiento": "🚕 EN_MOVIMIENTO",
+    "estado_inicial": "— pulsa 1 para iniciar la Carrera —",
+    "tui_titulo": "🚕 Taxímetro",
+    "tui_carrera_iniciada": "Carrera iniciada",
+    "tui_carrera_finalizada": "Importe total: {importe}",
+    "tui_carrera_finalizada_titulo": "🏁 Carrera finalizada"
+}

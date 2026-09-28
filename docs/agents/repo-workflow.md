@@ -12,6 +12,10 @@ docs — the CI title check below is the only rule in that area.
 - `dev` — daily work integrates here; PRs from feature branches into `dev`, then
   `dev` → `stg` → `main`.
 - Feature branches: `<type>/<slug>` off `dev`.
+- `main` is the **source of truth**: keep `dev` synced by merging `main` into `dev`
+  (admin-bypassed push — it's a sync, not feature work).
+- Tickets close **manually** when their PR targets `dev`: "Closes #N" only auto-fires on
+  the default branch.
 
 ## Pull requests
 

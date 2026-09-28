@@ -23,16 +23,16 @@ Exemption: throwaway scaffolding/scripts. Everything in `packages/*` (contexts) 
 
 ## Where tests live
 
-- All tests in **`packages/tests`** (the dedicated test workspace member) — they may
-  import any other member, nothing imports them.
-- Files mirror the structure they specify: `tests/ride/test_carrera.py`,
-  `tests/pricing/test_motor_tarifas.py`, …
+- Tests live inside each workspace member: `packages/taximetro/tests/` (domain math +
+  service behavior) and `apps/taximetro_cli/tests/` (REPL + TUI). Nothing imports the
+  tests.
+- **CLI tests use Typer's `CliRunner`** — never raw `main()` + capsys: Typer parses
+  `sys.argv` and would eat pytest's arguments. Texts come from `textos.json`: no raw
+  keys in the output, rendered text is not blank, Spanish literals pin the language.
+- **TUI tests use Textual's `App.run_test()` pilot** (`pilot.press`) with the same
+  injected fake clock as everywhere else.
 - Test names state the behavior in domain vocabulary (*carrera*, *tarifa*,
   *cambiar_estado*), e.g. `test_carrera_en_movimiento_acumula_0_05_eur_por_segundo`.
-- **Contract tests pin every port**: each consumer-owned port (e.g. `pricing`'s
-  rate-loading port, `fleet`'s ledger repository) gets one behavior suite run against
-  every adapter — the JSON adapters pass them today; the Fase 4 Postgres adapters must
-  pass the same tests before they are accepted.
 
 ## Reporting — Allure HTML on GitHub Pages
 

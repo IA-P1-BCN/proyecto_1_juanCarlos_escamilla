@@ -126,7 +126,7 @@ jobs:
             const repo = context.repo.repo;
             const prNum = "${{ steps.vars.outputs.pr_num }}";
             const subfolder = "${{ steps.vars.outputs.subfolder }}";
-            
+
             const reportUrl = `https://${owner}.github.io/${repo}/${subfolder}/`;
             const commentBody = `📊 **Allure Test Report Updated for PR #${prNum}**\n\nView interactive test results:\n${reportUrl}`;
 
