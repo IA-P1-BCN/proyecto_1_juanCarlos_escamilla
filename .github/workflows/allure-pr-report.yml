@@ -87,7 +87,6 @@ jobs:
 
       - name: Índice de informes (raíz de Pages)
         run: |
-          rm -f allure-history/index.html  # el action lo deja read-only
           python3 - <<'PY'
           import pathlib
 
@@ -114,8 +113,10 @@ jobs:
               "<p>Un informe por PR y el estado de main — se conservan los últimos 20.</p>"
               f"<ul>{''.join(filas)}</ul></body></html>\n"
           )
-          (raiz / "index.html").write_text(html, encoding="utf-8")
+          pathlib.Path("allure-index.html").write_text(html, encoding="utf-8")
           PY
+          # el action (Docker) deja index.html root-owned: se sobreescribe con sudo
+          sudo install -m 0644 allure-index.html allure-history/index.html
 
       - name: Deploy Report to gh-pages Branch
         uses: peaceiris/actions-gh-pages@v4
