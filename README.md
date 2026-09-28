@@ -4,6 +4,7 @@
 > céntimo a céntimo, construido con DDD en un monorepo uv.
 
 ![CI](https://github.com/IA-P1-BCN/proyecto_1_juanCarlos_escamilla/actions/workflows/pr-checks.yml/badge.svg)
+[![Release](https://img.shields.io/github/v/release/IA-P1-BCN/proyecto_1_juanCarlos_escamilla)](https://github.com/IA-P1-BCN/proyecto_1_juanCarlos_escamilla/releases)
 [![Tests — Allure](https://img.shields.io/badge/tests-Allure%20report-50AF82?logo=allure&logoColor=white)](https://ia-p1-bcn.github.io/proyecto_1_juanCarlos_escamilla/)
 ![Python](https://img.shields.io/badge/python-3.12-blue?logo=python&logoColor=white)
 ![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge.json)
@@ -144,6 +145,10 @@ EventBus, que alimentan la bitácora de operación y el histórico del día.
 2. PR hacia `dev` con título semántico (`feat: …`, `fix: …`) — la CI ejecuta
    ruff + mypy + pytest.
 3. TDD estricto: primero el test en rojo (`docs/agents/testing-tdd.md`).
+
+**Flujo de release:** `dev → stg` genera la etiqueta `v<versión>` (de
+`pyproject.toml`) y `stg → main` publica la Release con notas autogeneradas
+([CHANGELOG.md](CHANGELOG.md) documenta cada versión).
 
 Tras `task setup`, cada commit pasa por pre-commit (ruff lint + formato y checks
 de higiene de ficheros).

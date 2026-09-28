@@ -11,7 +11,7 @@ from taximetro_billing.tarifa import Tarifa
 def _raiz_recursos() -> Path:
     """Raíz de `config/`: el paquete fuente en dev, `_MEIPASS` en el binario frozen."""
     if getattr(sys, "frozen", False):
-        return Path(getattr(sys, "_MEIPASS"))
+        return Path(sys._MEIPASS)  # type: ignore[attr-defined]
     return Path(__file__).resolve().parents[2]
 
 
