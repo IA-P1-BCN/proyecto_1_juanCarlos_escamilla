@@ -1,0 +1,79 @@
+name: Tags & Releases
+
+# dev → stg : etiqueta v<versión> (leída de pyproject.toml)
+# stg → main : Release de GitHub con notas generadas
+
+on:
+  push:
+    branches:
+      - stg
+      - main
+
+permissions:
+  contents: write
+
+concurrency:
+  group: tags-releases-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  tag:
+    name: Etiquetar (stg)
+    if: github.ref == 'refs/heads/stg'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Leer versión de pyproject.toml
+        id: version
+        run: |
+          VERSION="$(grep -m1 '^version = ' pyproject.toml | cut -d'"' -f2)"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Crear y push de la etiqueta (si no existe)
+        run: |
+          TAG="${{ steps.version.outputs.tag }}"
+          if git rev-parse -q --verify "refs/tags/$TAG" >/dev/null; then
+            echo "La etiqueta $TAG ya existe: nada que hacer."
+          else
+            git tag -a "$TAG" -m "v$TAG (${GITHUB_SHA})"
+            git push origin "$TAG"
+            echo "✓ Etiqueta $TAG creada en stg"
+          fi
+
+  release:
+    name: Release (main)
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Leer versión de pyproject.toml
+        id: version
+        run: |
+          VERSION="$(grep -m1 '^version = ' pyproject.toml | cut -d'"' -f2)"
+          echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Crear la Release (si no existe)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="${{ steps.version.outputs.tag }}"
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "La release $TAG ya existe: nada que hacer."
+          else
+            if ! git rev-parse -q --verify "refs/tags/$TAG" >/dev/null; then
+              echo "La etiqueta $TAG no existía: creándola en main."
+              git tag -a "$TAG" -m "v$TAG (${GITHUB_SHA})"
+              git push origin "$TAG"
+            fi
+            gh release create "$TAG" --verify-tag --generate-notes --latest
+            echo "✓ Release $TAG publicada"
+          fi
