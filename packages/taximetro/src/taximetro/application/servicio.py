@@ -4,11 +4,11 @@ from collections.abc import Callable
 from datetime import date, datetime
 from typing import Protocol
 
-from taximetro.domain.carrera import Carrera, TaximetroError
-from taximetro.domain.dinero import Money
-from taximetro.domain.eventos import Estado
+from taximetro_billing import Tarifa, calcular_importe
+from taximetro_kernel import Estado, Money, TaximetroError
+from taximetro_ride import Carrera
+
 from taximetro.domain.registro import CarreraRegistro
-from taximetro.domain.tarifa import Tarifa, calcular_importe
 
 Reloj = Callable[[], datetime]
 Publicador = Callable[[object], None]

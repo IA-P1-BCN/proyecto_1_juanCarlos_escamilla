@@ -1,9 +1,18 @@
 [project]
 name = "taximetro"
 version = "0.1.0"
-description = "Lógica de negocio del taxímetro — Carrera por tramos, Tarifa e Importe"
+description = "Capa de aplicación del taxímetro — el turno (ServicioTaximetro) y el histórico"
 requires-python = ">=3.12"
-dependencies = []
+dependencies = [
+    "taximetro-kernel",
+    "taximetro-ride",
+    "taximetro-billing",
+]
+
+[tool.uv.sources]
+taximetro-kernel = { workspace = true }
+taximetro-ride = { workspace = true }
+taximetro-billing = { workspace = true }
 
 [build-system]
 requires = ["hatchling"]

@@ -1,13 +1,9 @@
-"""Estados y eventos del ciclo de vida de la Carrera."""
+"""Eventos de dominio del contexto ride."""
 
 from dataclasses import dataclass
 from datetime import datetime
-from enum import Enum
 
-
-class Estado(Enum):
-    PARADA = "parada"
-    EN_MOVIMIENTO = "en_movimiento"
+from taximetro_kernel import Estado
 
 
 @dataclass(frozen=True)

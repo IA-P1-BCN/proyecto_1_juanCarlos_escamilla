@@ -1,9 +1,9 @@
 # TaxiTech Taxímetro — Lenguaje Ubicuo
 
 Glossary for the taximeter system (TTX-247). Canonical terms are Spanish, matching
-`docs/CLIENT_SPECS.md`; package names are English (`ride`, `pricing`, `identity`,
-`fleet`). Terms are grouped by the bounded context that owns them — the owner is the
-only place that defines the term's model.
+`docs/CLIENT_SPECS.md`; code packages are `taximetro-kernel` (kernel), `taximetro-ride`
+(ride), `taximetro-billing` (billing). Terms are grouped by the bounded context that
+owns them — the owner is the only place that defines the term's model.
 
 ## Ride — carrera
 
@@ -35,7 +35,7 @@ _Avoid_: conductor, usuario, driver
 Persona transportada que paga el importe al finalizar. No interactúa con el sistema.
 _Avoid_: cliente, customer
 
-## Pricing — tarifas
+## Billing — tarifas
 
 **Tarifa**:
 Par de precios vigentes en €/segundo: parada y en movimiento. Value object whose provisioning is owned by pricing.

@@ -1,21 +1,13 @@
-"""Carrera — aggregate: nace en parada, avanza por tramos y finaliza."""
+"""Carrera — aggregate de ride: nace en parada, avanza por tramos y finaliza."""
 
 from collections.abc import Callable
-from dataclasses import dataclass
 from datetime import datetime
 
-from taximetro.domain.eventos import (
-    CarreraFinalizada,
-    CarreraIniciada,
-    Estado,
-    EstadoCambiado,
-)
+from taximetro_kernel import Estado, TaximetroError, Tramo
+
+from taximetro_ride.eventos import CarreraFinalizada, CarreraIniciada, EstadoCambiado
 
 Publicador = Callable[[object], None]
-
-
-class TaximetroError(Exception):
-    """Fallo de las reglas del taxímetro."""
 
 
 class TramoInvalidoError(TaximetroError):
@@ -24,15 +16,6 @@ class TramoInvalidoError(TaximetroError):
 
 class CarreraYaFinalizadaError(TaximetroError):
     """La Carrera ya finalizó: es inmutable."""
-
-
-@dataclass(frozen=True)
-class Tramo:
-    """Trecho de Carrera en un Estado; fin=None mientras está en curso."""
-
-    estado: Estado
-    inicio: datetime
-    fin: datetime | None = None
 
 
 class Carrera:

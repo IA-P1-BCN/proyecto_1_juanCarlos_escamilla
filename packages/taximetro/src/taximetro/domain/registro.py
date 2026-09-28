@@ -3,7 +3,7 @@
 from dataclasses import dataclass
 from datetime import datetime
 
-from taximetro.domain.dinero import Money
+from taximetro_kernel import Money
 
 
 @dataclass(frozen=True)

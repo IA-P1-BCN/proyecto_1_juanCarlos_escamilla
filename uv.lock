@@ -10,7 +10,10 @@ resolution-markers = [
 members = [
     "stn-taximetro",
     "taximetro",
+    "taximetro-billing",
     "taximetro-cli",
+    "taximetro-kernel",
+    "taximetro-ride",
 ]
 
 [[package]]
@@ -584,6 +587,29 @@ dev = [
 name = "taximetro"
 version = "0.1.0"
 source = { editable = "packages/taximetro" }
+dependencies = [
+    { name = "taximetro-billing" },
+    { name = "taximetro-kernel" },
+    { name = "taximetro-ride" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "taximetro-billing", editable = "packages/taximetro-billing" },
+    { name = "taximetro-kernel", editable = "packages/taximetro-kernel" },
+    { name = "taximetro-ride", editable = "packages/taximetro-ride" },
+]
+
+[[package]]
+name = "taximetro-billing"
+version = "0.1.0"
+source = { editable = "packages/taximetro-billing" }
+dependencies = [
+    { name = "taximetro-kernel" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "taximetro-kernel", editable = "packages/taximetro-kernel" }]
 
 [[package]]
 name = "taximetro-cli"
@@ -601,6 +627,22 @@ requires-dist = [
     { name = "textual", specifier = ">=1.0" },
     { name = "typer", specifier = ">=0.12" },
 ]
+
+[[package]]
+name = "taximetro-kernel"
+version = "0.1.0"
+source = { editable = "packages/taximetro-kernel" }
+
+[[package]]
+name = "taximetro-ride"
+version = "0.1.0"
+source = { editable = "packages/taximetro-ride" }
+dependencies = [
+    { name = "taximetro-kernel" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "taximetro-kernel", editable = "packages/taximetro-kernel" }]
 
 [[package]]
 name = "textual"

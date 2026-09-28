@@ -132,12 +132,13 @@ El puesto del conductor: contador grande que corre en tiempo real, badge de Esta
 
 ## 🧭 Cómo está construido
 
-Monorepo uv minimalista: **toda la lógica de negocio en `packages/taximetro`** (capas
-DDD: `domain/` — Carrera por tramos, Tarifa, Money, eventos; `application/` — el caso
-de uso del turno con reloj inyectado; `infrastructure/` — config y EventBus) y **la
-presentación en `apps/taximetro_cli`** (REPL Typer + TUI Textual, textos en
-`textos.json`). El Importe se deriva de los tramos con un único redondeo; las tarifas
-viven en `packages/taximetro/config/tarifas.json`.
+Monorepo uv con **contextos delimitados como paquetes**: `taximetro-kernel` (el
+vocabulario común: Money, Estado, Tramo, EventBus), `taximetro-ride` (la Carrera y su
+ciclo de vida), `taximetro-billing` (la Tarifa y el Importe, dueño de `tarifas.json`) y
+`taximetro` como capa de aplicación (`ServicioTaximetro` + histórico) que se importa
+como única fachada desde la app. La presentación vive en `apps/taximetro_cli` (REPL
+Typer + TUI Textual, textos en `textos.json`). El Importe se deriva de los tramos con
+un único redondeo.
 
 - 📘 Arquitectura: [`docs/agents/architecture.md`](docs/agents/architecture.md)
 - 🗣️ Lenguaje del dominio: [`CONTEXT.md`](CONTEXT.md)

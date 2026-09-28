@@ -5,9 +5,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from decimal import ROUND_HALF_UP, Decimal
 
-from taximetro.domain.carrera import Tramo
-from taximetro.domain.dinero import Money
-from taximetro.domain.eventos import Estado
+from taximetro_kernel import Estado, Money, Tramo
 
 
 @dataclass(frozen=True)

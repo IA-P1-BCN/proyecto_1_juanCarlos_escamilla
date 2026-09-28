@@ -1,4 +1,18 @@
-"""Taxímetro — lógica de negocio: Carrera por tramos, Tarifa, Importe."""
+"""Taxímetro — capa de aplicación: el turno (ServicioTaximetro) y el histórico.
+
+Fachada: reexporta el API público que compone (kernel + ride + billing) para que
+la app dependa solo de este paquete.
+"""
+
+from taximetro_billing import Tarifa, calcular_importe, cargar_tarifa
+from taximetro_kernel import Estado, EventBus, Money, TaximetroError, Tramo
+from taximetro_ride import (
+    Carrera,
+    CarreraFinalizada,
+    CarreraIniciada,
+    CarreraYaFinalizadaError,
+    EstadoCambiado,
+)
 
 from taximetro.application.servicio import (
     CarreraYaEnCursoError,
@@ -6,23 +20,7 @@ from taximetro.application.servicio import (
     RepositorioHistorico,
     ServicioTaximetro,
 )
-from taximetro.domain.carrera import (
-    Carrera,
-    CarreraYaFinalizadaError,
-    TaximetroError,
-    Tramo,
-)
-from taximetro.domain.dinero import Money
-from taximetro.domain.eventos import (
-    CarreraFinalizada,
-    CarreraIniciada,
-    Estado,
-    EstadoCambiado,
-)
 from taximetro.domain.registro import CarreraRegistro
-from taximetro.domain.tarifa import Tarifa, calcular_importe
-from taximetro.infrastructure.config import cargar_tarifa
-from taximetro.infrastructure.event_bus import EventBus
 from taximetro.infrastructure.historico import HistoricoJson
 
 __all__ = [

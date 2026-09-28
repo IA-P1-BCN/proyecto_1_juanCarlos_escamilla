@@ -1,13 +1,13 @@
-"""Configuración: tarifas vigentes desde config/tarifas.json."""
+"""Configuración de billing: tarifas vigentes desde config/tarifas.json."""
 
 import json
 from decimal import Decimal
 from pathlib import Path
 
-from taximetro.domain.tarifa import Tarifa
+from taximetro_billing.tarifa import Tarifa
 
 # Resuelta contra el paquete fuente (instalación editable del workspace).
-_RUTA_POR_DEFECTO = Path(__file__).resolve().parents[3] / "config" / "tarifas.json"
+_RUTA_POR_DEFECTO = Path(__file__).resolve().parents[2] / "config" / "tarifas.json"
 
 
 def cargar_tarifa(ruta: Path = _RUTA_POR_DEFECTO) -> Tarifa:

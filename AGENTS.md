@@ -5,9 +5,10 @@ Digital taximeter prototype for TaxiTech Solutions (TTX-247): a CLI that prices 
 and an API + web panel. Requirements live in `docs/CLIENT_SPECS.md`; the clean
 architecture rules in `docs/rules_project.md`.
 
-- **Language:** Python 3.12 · **Stack:** uv monorepo (`apps/*`, `packages/*`) · one
-  business package `packages/taximetro` (DDD layers: domain / application /
-  infrastructure) · one app `apps/taximetro_cli`: Typer REPL + Textual TUI, texts in
+- **Language:** Python 3.12 · **Stack:** uv monorepo (`apps/*`, `packages/*`) · bounded
+  contexts as packages: `taximetro-kernel` (shared vocabulary), `taximetro-ride`
+  (Carrera lifecycle), `taximetro-billing` (Tarifa/Importe) + `taximetro` (application
+  layer + facade) · app `apps/taximetro_cli`: Typer REPL + Textual TUI, texts in
   `textos.json` (Spanish primary)
 
 ## Non-negotiables
@@ -17,13 +18,13 @@ architecture rules in `docs/rules_project.md`.
    without a failing test first. Details: `docs/agents/testing-tdd.md`.
 2. **Python best practices.** PEP 8 enforced by Ruff (format is never debated in
    review). Full standards: `docs/agents/python-standards.md`.
-3. **Layered DDD, one package.** All business logic lives in `packages/taximetro`:
-   `domain/` is pure (Carrera por tramos, Tarifa, Money, eventos — zero deps),
-   `application/` holds the use case (`ServicioTaximetro`, reloj inyectado),
-   `infrastructure/` holds config + EventBus. `apps/taximetro_cli` is presentation
-   only — no business rules in the app. The Importe is always derived from the tramos
-   (single half-up rounding), never accumulated tick by tick. Details:
-   `docs/agents/architecture.md`.
+3. **Bounded contexts, one kernel.** Contexts live as workspace packages
+   (`taximetro-ride`, `taximetro-billing`) and never import each other — they speak
+   through `taximetro-kernel` types (`Tramo`, `Estado`, `Money`) and domain events.
+   `taximetro` is the application layer (`ServicioTaximetro`, histórico) and re-exports
+   the public API as a facade. The Importe is always derived from the tramos (single
+   half-up rounding), never accumulated tick by tick. Apps are presentation only.
+   Details: `docs/agents/architecture.md`.
 
 ## Commands
 

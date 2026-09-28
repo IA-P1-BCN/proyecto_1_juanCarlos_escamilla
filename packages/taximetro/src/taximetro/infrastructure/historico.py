@@ -5,7 +5,8 @@ from datetime import date, datetime
 from pathlib import Path
 from typing import Any
 
-from taximetro.domain.dinero import Money
+from taximetro_kernel import Money
+
 from taximetro.domain.registro import CarreraRegistro
 
 # Resuelta contra el paquete fuente (instalación editable del workspace).

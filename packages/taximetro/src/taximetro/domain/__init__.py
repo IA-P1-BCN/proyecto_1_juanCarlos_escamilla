@@ -1,1 +1,1 @@
-"""Capa de dominio: Carrera, Tramo, Tarifa, Money, eventos — reglas puras."""
+"""Capa de dominio de la aplicación: proyección CarreraRegistro (histórico)."""
