@@ -2,13 +2,15 @@
 
 import json
 import logging
+import os
 from datetime import UTC, datetime
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
 from typing import Any
 
-# Resuelta contra el paquete fuente (instalación editable del workspace).
-_RUTA_POR_DEFECTO = Path(__file__).resolve().parents[2] / "data" / "taximetro.log"
+# La bitácora vive donde se ejecuta el taxímetro (`data/` del cwd),
+# no dentro del paquete: el binario frozen no puede escribir en su bundle.
+_RUTA_POR_DEFECTO = Path(os.environ.get("TAXIMETRO_DATA", "data")) / "taximetro.log"
 
 
 class BitacoraJSON:

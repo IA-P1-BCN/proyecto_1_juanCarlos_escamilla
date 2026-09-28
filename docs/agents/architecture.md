@@ -43,11 +43,17 @@ apps/taximetro_cli/              # presentación, en capas (sin domain/ ni appli
    composed public API so `apps/*` import everything from `taximetro` alone.
 4. **Apps are presentation only** — REPL/TUI translate commands/keys into service calls
    and paint. The clock is always injected (`crear_app(reloj)` / `crear_tui(reloj)`).
-5. **billing owns `config/tarifas.json`** (US-07); the histórico JSON lives under
-   `packages/taximetro/data/` and the bitácora under `packages/taximetro-log/data/`
-   (both gitignored, file-first — BD in Fase 4). `taximetro-log` knows no domain: the
-   application layer maps domain events to bitácora entries
-   (`registrar_eventos`); the app logs `arranque`, `error` and `historial_consultado`.
+5. **billing owns `config/tarifas.json`** (US-07); the histórico and the bitácora are
+   written to `data/` under the current working directory (overridable with
+   `TAXIMETRO_DATA`) — never inside the packages, so the frozen binary can write its
+   data too. `taximetro-log` knows no domain: the application layer maps domain events
+   to bitácora entries (`registrar_eventos`); the app logs `arranque`, `error` and
+   `historial_consultado`. Read-side resources (tarifas.json, textos.json) resolve via
+   `sys._MEIPASS` when frozen (PyInstaller) and via the package path in dev.
+6. **The native binary** (`task bin` → `bin/taximetro`, gitignored) is built with
+   PyInstaller from `apps/taximetro_cli/taximetro.spec`: onefile, entry
+   `__main__.py` (no args → REPL, `tui` → TUI), bundled datas tarifas.json +
+   textos.json. macOS arm64 — build where you run.
 
 ## Testing seams (pre-agreed)
 

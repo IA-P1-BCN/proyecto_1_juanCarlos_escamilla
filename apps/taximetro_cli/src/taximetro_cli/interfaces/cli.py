@@ -159,5 +159,5 @@ def crear_app(
 
 
 def main() -> None:
-    """Ejecuta la sesión interactiva con reloj y bitácora reales."""
-    sesion(RelojReal())
+    """Ejecuta la app completa: banner, instrucciones y sesión interactiva."""
+    crear_app(RelojReal())()

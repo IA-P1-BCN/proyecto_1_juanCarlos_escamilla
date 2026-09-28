@@ -7,10 +7,21 @@ tasks:
       - uv sync --all-packages
       - uv run pre-commit install
 
+  run:
+    desc: Arranca el REPL del taxímetro (taximetro-cli)
+    cmds:
+      - uv run taximetro-cli
+
   run-tui:
     desc: Arranca la TUI a pantalla completa (taximetro-tui)
     cmds:
       - uv run taximetro-tui
+
+  bin:
+    desc: Compila el binario nativo en bin/taximetro (PyInstaller, macOS arm64)
+    cmds:
+      - uv run pyinstaller apps/taximetro_cli/taximetro.spec --noconfirm
+      - mkdir -p bin && cp dist/taximetro bin/taximetro
 
   format:
     desc: Formatea el código con ruff

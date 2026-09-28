@@ -1,6 +1,7 @@
 """Histórico en JSON — carreras finalizadas persistidas por día (#5)."""
 
 import json
+import os
 from datetime import date, datetime
 from pathlib import Path
 from typing import Any
@@ -9,8 +10,9 @@ from taximetro_kernel import Money
 
 from taximetro.domain.registro import CarreraRegistro
 
-# Resuelta contra el paquete fuente (instalación editable del workspace).
-_RUTA_POR_DEFECTO = Path(__file__).resolve().parents[3] / "data" / "historico.json"
+# Los datos viven donde se ejecuta el taxímetro (`data/` del cwd),
+# no dentro del paquete: el binario frozen no puede escribir en su bundle.
+_RUTA_POR_DEFECTO = Path(os.environ.get("TAXIMETRO_DATA", "data")) / "historico.json"
 
 
 class HistoricoJson:
